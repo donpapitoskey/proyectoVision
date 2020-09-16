@@ -15,6 +15,15 @@ class Window2(QMainWindow):                           # <===
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Window22222")
+        self.resize(650, 505)
+        self.newCentralWidget = QtWidgets.QWidget(self)
+        self.groupBox_3 = QtWidgets.QGroupBox(self.newCentralWidget)
+        self.groupBox_3.setGeometry(0,0,650,505)
+        self.gridLayout = QtWidgets.QGridLayout(self.groupBox_3)
+        self.plotHisto = PlotWidget(self.groupBox_3)
+        self.gridLayout.addWidget(self.plotHisto, 0, 1, 1, 1)
+        self.setCentralWidget(self.newCentralWidget)
+        
 
 class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
@@ -52,6 +61,10 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
     def histogramaGlobal(self):
         self.plotHisto.clear()
 
+        self.wGlob = Window2()
+        self.wGlob.setWindowTitle("Global")
+        self.wGlob.show()
+        self.wGlob.plotHisto.clear()
         #img2=self.img
         img2=cv2.cvtColor(self.img,cv2.COLOR_RGB2GRAY)
         hist = cv2.calcHist([img2], [0], None, [256], [0, 256])
@@ -66,6 +79,9 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.plotHisto.plot(x,hist, title=('Histograma Global')) 
         self.plotHisto.setLabel('left','Cantidad de pixeles' )
         self.plotHisto.setLabel('bottom','Intensidad de iluminacion' )
+        self.wGlob.plotHisto.plot(x,hist, title=('Histograma Global')) 
+        self.wGlob.plotHisto.setLabel('left','Cantidad de pixeles' )
+        self.wGlob.plotHisto.setLabel('bottom','Intensidad de iluminacion' )
         
         
        
@@ -76,9 +92,10 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         
     
     def histogramaHor(self):
-        self.w = Window2()
-        self.w.show()
-        
+        self.wHor = Window2()
+        self.wHor.setWindowTitle("Horizontal")
+        self.wHor.show()
+        self.wHor.plotHisto.clear()
 
         
         self.plotHisto.clear()
@@ -90,16 +107,28 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.plotHisto.plot(yhist,y, title=('Histograma Horizontal')) 
         self.plotHisto.setLabel('left','Cantidad de pixeles' )
         self.plotHisto.setLabel('bottom','Intensidad de iluminacion' )        
+
+        self.wHor.plotHisto.plot(yhist,y, title=('Histograma Horizontal')) 
+        self.wHor.plotHisto.setLabel('left','Cantidad de pixeles' )
+        self.wHor.plotHisto.setLabel('bottom','Intensidad de iluminacion' )        
                   
     def histogramaVer(self):
+
+        self.wVer = Window2()
+        self.wVer.setWindowTitle("Horizontal")
+        self.wVer.show()
+        self.wVer.plotHisto.clear()
         self.plotHisto.clear()
+
         #imag4=self.img
         imag4 = cv2.cvtColor(self.img,cv2.COLOR_BGR2GRAY)
         xhist=np.mean(imag4,axis=0)
         self.plotHisto.plot(xhist, title=('Histograma Vertical'))         
         self.plotHisto.setLabel('left','Intensidad de iluminacion' )
         self.plotHisto.setLabel('bottom','Cantidad de pixeles' )
-                  
+        self.wVer.plotHisto.plot(xhist, title=('Histograma Vertical'))         
+        self.wVer.plotHisto.setLabel('left','Intensidad de iluminacion' )
+        self.wVer.plotHisto.setLabel('bottom','Cantidad de pixeles' )
 
             
              
