@@ -20,9 +20,7 @@ class Window2(QMainWindow):                           # <===
         self.groupBox_3 = QtWidgets.QGroupBox(self.newCentralWidget)
         self.groupBox_3.setGeometry(0,0,650,505)
         self.gridLayout = QtWidgets.QGridLayout(self.groupBox_3)
-        self.plotHisto = PlotWidget(self.groupBox_3)
-        self.gridLayout.addWidget(self.plotHisto, 0, 1, 1, 1)
-        self.setCentralWidget(self.newCentralWidget)
+        
         
 
 class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -47,6 +45,8 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
     #Aquí van las nuevas funciones
     def abrirImg(self):
         filePath, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', 'c:')
+        
+
         if filePath != "":
             print ("Dirección",filePath) #Opcional imprimir la dirección del archivo
             self.img=cv2.imread(filePath)
@@ -62,6 +62,9 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.plotHisto.clear()
 
         self.wGlob = Window2()
+        self.wGlob.plotHisto = PlotWidget(self.wGlob.groupBox_3)
+        self.wGlob.gridLayout.addWidget(self.wGlob.plotHisto, 0, 1, 1, 1)
+        self.wGlob.setCentralWidget(self.wGlob.newCentralWidget)
         self.wGlob.setWindowTitle("Global")
         self.wGlob.show()
         self.wGlob.plotHisto.clear()
@@ -93,6 +96,9 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
     
     def histogramaHor(self):
         self.wHor = Window2()
+        self.wHor.plotHisto = PlotWidget(self.wHor.groupBox_3)
+        self.wHor.gridLayout.addWidget(self.wHor.plotHisto, 0, 1, 1, 1)
+        self.wHor.setCentralWidget(self.wHor.newCentralWidget)
         self.wHor.setWindowTitle("Horizontal")
         self.wHor.show()
         self.wHor.plotHisto.clear()
@@ -115,6 +121,9 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
     def histogramaVer(self):
 
         self.wVer = Window2()
+        self.wVer.plotHisto = PlotWidget(self.wVer.groupBox_3)
+        self.wVer.gridLayout.addWidget(self.wVer.plotHisto, 0, 1, 1, 1)
+        self.wVer.setCentralWidget(self.wVer.newCentralWidget)
         self.wVer.setWindowTitle("Horizontal")
         self.wVer.show()
         self.wVer.plotHisto.clear()
