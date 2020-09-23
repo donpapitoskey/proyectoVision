@@ -38,7 +38,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnGlobal.clicked.connect(self.histogramaGlobal)
         self.btnHorizontal.clicked.connect(self.histogramaHor)
         self.btnVertical.clicked.connect(self.histogramaVer)
-        
+        self.btnFunc.clicked.connect(self.function1)
         
         #Aquí van los botones
         
@@ -46,16 +46,24 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
     def abrirImg(self):
         filePath, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Open file', 'c:')
         
+        
+        #self.wIm = Window2()
+        #self.wIm.imageContainer = QtWidgets.QGraphicsView(self.wIm.groupBox_3)
+        #self.wIm.gridLayout.addWidget(self.wIm.imageContainer, 0, 1, 1, 1)
+        #self.wIm.setCentralWidget(self.wIm.newCentralWidget)
+        #self.wIm.setWindowTitle("Image Container")
+        #self.wIm.show()
 
         if filePath != "":
             print ("Dirección",filePath) #Opcional imprimir la dirección del archivo
             self.img=cv2.imread(filePath)
+            pg.image(self.img)
             img = pg.ImageItem()
             img.setImage(self.img)
             #self.plotImg.addItem(img)
-            PIXMAP= QPixmap(filePath)
+            #PIXMAP= QPixmap(filePath)
             #PIXMAP=PIXMAP.scaled(self,self.label_2.width(), self.label_2.height())
-            self.label_2.setPixmap(PIXMAP)
+            #self.label_2.setPixmap(PIXMAP)
             
             
     def histogramaGlobal(self):
@@ -138,6 +146,9 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.wVer.plotHisto.plot(xhist, title=('Histograma Vertical'))         
         self.wVer.plotHisto.setLabel('left','Intensidad de iluminacion' )
         self.wVer.plotHisto.setLabel('bottom','Cantidad de pixeles' )
+
+    def function1(self):
+        print(self.img)
 
             
              
