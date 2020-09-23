@@ -40,6 +40,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnVertical.clicked.connect(self.histogramaVer)
         self.btnFunc.clicked.connect(self.function1)
         
+
         #Aquí van los botones
         
     #Aquí van las nuevas funciones
@@ -148,7 +149,15 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.wVer.plotHisto.setLabel('bottom','Cantidad de pixeles' )
 
     def function1(self):
-        print(self.img)
+        
+        x=np.array(np.arange(0,256,1)).reshape((1,256))
+        xMat=np.repeat(x,256, axis=0)
+        yMat=xMat.transpose()
+        self.test = np.divide(np.add(xMat,yMat),2)
+        
+        pg.image(self.test)
+        
+        
 
             
              
