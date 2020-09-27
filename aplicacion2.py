@@ -34,12 +34,13 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         self.setupUi(self)
         self.img=[]
+        self.img2=[]
         self.btnSelecArchivo.clicked.connect(self.abrirImg)
         self.btnGlobal.clicked.connect(self.histogramaGlobal)
         self.btnHorizontal.clicked.connect(self.histogramaHor)
         self.btnVertical.clicked.connect(self.histogramaVer)
         self.btnFunc.clicked.connect(self.function1)
-        
+        self.btnFunc1.clicked.connect(self.function2)
 
         #Aquí van los botones
         
@@ -57,8 +58,9 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
         if filePath != "":
             print ("Dirección",filePath) #Opcional imprimir la dirección del archivo
-            self.img=cv2.imread(filePath)
-            pg.image(self.img)
+            self.img=cv2.imread(filePath,)
+            self.img2 = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV_FULL)
+            self.img = cv2.cvtColor(self.img,cv2.COLOR_BGR2RGB)
             img = pg.ImageItem()
             img.setImage(self.img)
             #self.plotImg.addItem(img)
@@ -154,9 +156,64 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         xMat=np.repeat(x,256, axis=0)
         yMat=xMat.transpose()
         self.test = np.divide(np.add(xMat,yMat),2)
-        
         pg.image(self.test)
+        pg.image(np.subtract(255,self.img))
+    
+    def function2(self):
+
+        clahe = cv2.createCLAHE(clipLimit=3., tileGridSize=(8,8))
+        lab = cv2.cvtColor(self.img, cv2.COLOR_RGB2LAB)  # convert from BGR to LAB color space
+        l, a, b = cv2.split(lab)  # split on 3 different channels
+
+        #pg.image(l)
+        pg.image(self.img)
+
+        hist = cv2.calcHist([l], [0], None, [256], [0, 256])
+        #plt.plot(hist, color='gray' )
+
+        l2 = clahe.apply(l)  # apply CLAHE to the L-channel
+
+        #pg.image(l2)
+
+        hist = cv2.calcHist([l2], [0], None, [256], [0, 256])
+        #plt.plot(hist, color='gray' )
+
+        lab = cv2.merge((l2,a,b))  # merge channels
+        img2 = cv2.cvtColor(lab, cv2.COLOR_LAB2RGB)  # convert from LAB to BGR
+        pg.image( img2)
         
+        
+
+        
+        
+        
+    
+    def normHistogram(self):
+        self.wNormGlob = Window2()
+        self.wNormGlob.plotHisto = PlotWidget(self.wNormGlob.groupBox_3)
+        self.wNormGlob.gridLayout.addWidget(self.wNormGlob.plotHisto, 0, 1, 1, 1)
+        self.wNormGlob.setCentralWidget(self.wNormGlob.newCentralWidget)
+        self.wNormGlob.setWindowTitle("Global Normalizado")
+        self.wNormGlob.show()
+        self.wNormGlob.plotHisto.clear()
+        #img2=self.img
+        img2=cv2.cvtColor(self.img,cv2.COLOR_RGB2GRAY)
+        hist = cv2.calcHist([img2], [0], None, [256], [0, 256])
+        #hist=hist.T
+        #print(len(hist))
+        #print(type(hist))
+        x = np.linspace(0,255,256)
+        #x=x.T
+        #print(type(x))
+        hist=hist.reshape(-1)
+        print(hist)
+
+        self.plotHisto.plot(x,hist, title=('Histograma Global Normalizado')) 
+        self.plotHisto.setLabel('left','Cantidad de pixeles' )
+        self.plotHisto.setLabel('bottom','Intensidad de iluminacion' )
+        self.wGlob.plotHisto.plot(x,hist, title=('Histograma Global')) 
+        self.wGlob.plotHisto.setLabel('left','Cantidad de pixeles' )
+        self.wGlob.plotHisto.setLabel('bottom','Intensidad de iluminacion' )
         
 
             
