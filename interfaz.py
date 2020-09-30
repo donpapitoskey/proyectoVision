@@ -201,9 +201,9 @@ class Ui_MainWindow(object):
         self.btnGlobal.setText(_translate("MainWindow", "GLOBAL"))
         self.btnHorizontal.setText(_translate("MainWindow", "HORIZONTAL"))
         self.btnVertical.setText(_translate("MainWindow", "VERTICAL"))
-        self.btnFunc.setText(_translate("MainWindow", "Negativo"))
+        self.btnFunc.setText(_translate("MainWindow", "Ecualización de Histograma"))
         self.btnFunc1.setText(_translate("MainWindow", "CLAHE"))
-        self.btnFunc2.setText(_translate("MainWindow", "Funcion aplicar 3"))
+        self.btnFunc2.setText(_translate("MainWindow", "High Boost"))
         self.label.setText(_translate("MainWindow", "Visión Artificial: Fase 1 "))
         self.btnSelecArchivo.setText(_translate("MainWindow", "Seleccionar archivo"))
 from pyqtgraph import PlotWidget

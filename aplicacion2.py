@@ -8,6 +8,7 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow
+from scipy import signal
 import numpy as np
 #from matplotlib import pyplot as plt
 
@@ -39,9 +40,13 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnGlobal.clicked.connect(self.histogramaGlobal)
         self.btnHorizontal.clicked.connect(self.histogramaHor)
         self.btnVertical.clicked.connect(self.histogramaVer)
-        self.btnFunc.clicked.connect(self.function1)
-        self.btnFunc1.clicked.connect(self.function2)
-
+        self.btnFunc.clicked.connect(self.histogramaEcualizado)
+        self.btnFunc1.clicked.connect(self.aplicarClahe)
+        self.btnFunc2.clicked.connect(self.highBoost)
+        x=np.array(np.arange(0,256,1)).reshape((1,256))
+        xMat=np.repeat(x,256, axis=0)
+        yMat=xMat.transpose()
+        self.test = np.divide(np.add(xMat,yMat),2)
         #Aquí van los botones
         
     #Aquí van las nuevas funciones
@@ -59,7 +64,6 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         if filePath != "":
             print ("Dirección",filePath) #Opcional imprimir la dirección del archivo
             self.img=cv2.imread(filePath,)
-            self.img2 = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV_FULL)
             self.img = cv2.cvtColor(self.img,cv2.COLOR_BGR2RGB)
             img = pg.ImageItem()
             img.setImage(self.img)
@@ -152,42 +156,61 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def function1(self):
         
-        x=np.array(np.arange(0,256,1)).reshape((1,256))
-        xMat=np.repeat(x,256, axis=0)
-        yMat=xMat.transpose()
-        self.test = np.divide(np.add(xMat,yMat),2)
+        
         pg.image(self.test)
         pg.image(np.subtract(255,self.img))
     
-    def function2(self):
+    def aplicarClahe(self):
 
         clahe = cv2.createCLAHE(clipLimit=3., tileGridSize=(8,8))
         lab = cv2.cvtColor(self.img, cv2.COLOR_RGB2LAB)  # convert from BGR to LAB color space
         l, a, b = cv2.split(lab)  # split on 3 different channels
-
         #pg.image(l)
         pg.image(self.img)
-
         hist = cv2.calcHist([l], [0], None, [256], [0, 256])
         #plt.plot(hist, color='gray' )
-
         l2 = clahe.apply(l)  # apply CLAHE to the L-channel
-
         #pg.image(l2)
-
         hist = cv2.calcHist([l2], [0], None, [256], [0, 256])
         #plt.plot(hist, color='gray' )
-
         lab = cv2.merge((l2,a,b))  # merge channels
         img2 = cv2.cvtColor(lab, cv2.COLOR_LAB2RGB)  # convert from LAB to BGR
         pg.image( img2)
-        
-        
-
-        
-        
-        
     
+    def highBoost(self):
+        eg_1 = cv2.cvtColor(self.img,cv2.COLOR_RGB2HSV)
+        h_channel,s_channel,v_channel = cv2.split(eg_1)
+
+        #Creando la mascara
+        kernel = np.array([[0.0, -1.0, 0.0], 
+                   [-1.0, 5.0, -1.0],
+                   [0.0, -1.0, 0.0]])
+
+        kernel = kernel/(np.sum(kernel) if np.sum(kernel)!=0 else 1)
+
+        #Convolusion de mascara e imagen
+        img_rst = cv2.filter2D(v_channel,-1,kernel)
+        img_rst = cv2.merge((h_channel, s_channel, img_rst))
+        self.highboost = cv2.cvtColor(img_rst,cv2.COLOR_HSV2RGB)
+        pg.image(self.highboost)
+
+    def histogramaEcualizado(self):
+        eg_1 = cv2.cvtColor(self.img,cv2.COLOR_RGB2HSV)
+        h_channel,s_channel,v_channel = cv2.split(eg_1)
+        eh = cv2.equalizeHist(v_channel)
+        h_eHSV = cv2.calcHist([eh],[0],None,[256],[0,256])
+        h_eHSV=h_eHSV.reshape(-1)
+        self.wEcu = Window2()
+        self.wEcu.plotHisto = PlotWidget(self.wEcu.groupBox_3)
+        self.wEcu.gridLayout.addWidget(self.wEcu.plotHisto, 0, 1, 1, 1)
+        self.wEcu.setCentralWidget(self.wEcu.newCentralWidget)
+        self.wEcu.setWindowTitle("Ecualizado")
+        self.wEcu.show()
+        self.wEcu.plotHisto.clear()
+        self.wEcu.plotHisto.plot(h_eHSV, title=('Histograma Ecualizado'))         
+        self.wEcu.plotHisto.setLabel('left','Intensidad de iluminacion' )
+        self.wEcu.plotHisto.setLabel('bottom','Cantidad de pixeles' )
+
     def normHistogram(self):
         self.wNormGlob = Window2()
         self.wNormGlob.plotHisto = PlotWidget(self.wNormGlob.groupBox_3)
