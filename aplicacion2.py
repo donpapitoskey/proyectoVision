@@ -149,7 +149,8 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         lab = cv2.cvtColor(self.img, cv2.COLOR_RGB2LAB)  # convert from BGR to LAB color space
         l, a, b = cv2.split(lab)  # split on 3 different channels
         #pg.image(l)
-        pg.image(self.img)
+        origi = pg.image(self.img)
+        origi.setWindowTitle("Imagen Original")
         hist = cv2.calcHist([l], [0], None, [256], [0, 256])
         #plt.plot(hist, color='gray' )
         l2 = clahe.apply(l)  # apply CLAHE to the L-channel
@@ -158,7 +159,8 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         #plt.plot(hist, color='gray' )
         lab = cv2.merge((l2,a,b))  # merge channels
         img2 = cv2.cvtColor(lab, cv2.COLOR_LAB2RGB)  # convert from LAB to BGR
-        pg.image( img2)
+        modified = pg.image( img2)
+        modified.setWindowTitle("CLAHE")
     
     def highBoost(self):
         eg_1 = cv2.cvtColor(self.img,cv2.COLOR_RGB2HSV)
@@ -175,16 +177,20 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         img_rst = cv2.filter2D(v_channel,-1,kernel)
         img_rst = cv2.merge((h_channel, s_channel, img_rst))
         self.highboost = cv2.cvtColor(img_rst,cv2.COLOR_HSV2RGB)
-        pg.image(self.img)
-        pg.image(self.highboost)
+        origi = pg.image(self.img)
+        origi.setWindowTitle("Imagen Original")
+        modified = pg.image(self.highboost)
+        modified.setWindowTitle("High Boost")
 
     def histogramaEcualizado(self):
         eg_1 = cv2.cvtColor(self.img,cv2.COLOR_RGB2HSV)
         h_channel,s_channel,v_channel = cv2.split(eg_1)
         eh = cv2.equalizeHist(v_channel)
         result = cv2.merge((h_channel,s_channel,eh))
-        pg.image(cv2.cvtColor(result,cv2.COLOR_HSV2RGB))
-        pg.image(self.img)
+        modified = pg.image(cv2.cvtColor(result,cv2.COLOR_HSV2RGB))
+        modified.setWindowTitle("Histograma Ecualizado")
+        origi = pg.image(self.img)
+        origi.setWindowTitle("Imagen Original")
         h_eHSV = cv2.calcHist([eh],[0],None,[256],[0,256])
         h_eHSV=h_eHSV.reshape(-1)
         self.wEcu = Window2()
