@@ -74,8 +74,6 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             
             
     def histogramaGlobal(self):
-        self.plotHisto.clear()
-
         self.wGlob = Window2()
         self.wGlob.plotHisto = PlotWidget(self.wGlob.groupBox_3)
         self.wGlob.gridLayout.addWidget(self.wGlob.plotHisto, 0, 1, 1, 1)
@@ -93,10 +91,6 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         #x=x.T
         #print(type(x))
         hist=hist.reshape(-1)
-        
-        self.plotHisto.plot(x,hist, title=('Histograma Global')) 
-        self.plotHisto.setLabel('left','Cantidad de pixeles' )
-        self.plotHisto.setLabel('bottom','Intensidad de iluminacion' )
         self.wGlob.plotHisto.plot(x,hist, title=('Histograma Global')) 
         self.wGlob.plotHisto.setLabel('left','Cantidad de pixeles' )
         self.wGlob.plotHisto.setLabel('bottom','Intensidad de iluminacion' )
@@ -117,18 +111,11 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.wHor.setWindowTitle("Horizontal")
         self.wHor.show()
         self.wHor.plotHisto.clear()
-
-        
-        self.plotHisto.clear()
         #imag3=self.img
         # Conversion a escala de grices
         imag3 = cv2.cvtColor(self.img,cv2.COLOR_BGR2GRAY)
         yhist=np.mean(imag3,axis=1)
         y = -np.linspace(0,len(yhist),len(yhist))
-        self.plotHisto.plot(yhist,y, title=('Histograma Horizontal')) 
-        self.plotHisto.setLabel('left','Cantidad de pixeles' )
-        self.plotHisto.setLabel('bottom','Intensidad de iluminacion' )        
-
         self.wHor.plotHisto.plot(yhist,y, title=('Histograma Horizontal')) 
         self.wHor.plotHisto.setLabel('left','Cantidad de pixeles' )
         self.wHor.plotHisto.setLabel('bottom','Intensidad de iluminacion' )        
@@ -142,14 +129,9 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.wVer.setWindowTitle("Horizontal")
         self.wVer.show()
         self.wVer.plotHisto.clear()
-        self.plotHisto.clear()
-
         #imag4=self.img
         imag4 = cv2.cvtColor(self.img,cv2.COLOR_BGR2GRAY)
         xhist=np.mean(imag4,axis=0)
-        self.plotHisto.plot(xhist, title=('Histograma Vertical'))         
-        self.plotHisto.setLabel('left','Intensidad de iluminacion' )
-        self.plotHisto.setLabel('bottom','Cantidad de pixeles' )
         self.wVer.plotHisto.plot(xhist, title=('Histograma Vertical'))         
         self.wVer.plotHisto.setLabel('left','Intensidad de iluminacion' )
         self.wVer.plotHisto.setLabel('bottom','Cantidad de pixeles' )
@@ -230,10 +212,6 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         #print(type(x))
         hist=hist.reshape(-1)
         print(hist)
-
-        self.plotHisto.plot(x,hist, title=('Histograma Global Normalizado')) 
-        self.plotHisto.setLabel('left','Cantidad de pixeles' )
-        self.plotHisto.setLabel('bottom','Intensidad de iluminacion' )
         self.wGlob.plotHisto.plot(x,hist, title=('Histograma Global')) 
         self.wGlob.plotHisto.setLabel('left','Cantidad de pixeles' )
         self.wGlob.plotHisto.setLabel('bottom','Intensidad de iluminacion' )
