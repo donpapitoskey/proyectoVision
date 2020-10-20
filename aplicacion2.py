@@ -8,8 +8,8 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow
-from scipy import signal
 import numpy as np
+from skimage import morphology
 #from matplotlib import pyplot as plt
 
 class Window2(QMainWindow):                           # <===
@@ -21,8 +21,6 @@ class Window2(QMainWindow):                           # <===
         self.groupBox_3 = QtWidgets.QGroupBox(self.newCentralWidget)
         self.groupBox_3.setGeometry(0,0,650,505)
         self.gridLayout = QtWidgets.QGridLayout(self.groupBox_3)
-        
-        
 
 class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
@@ -44,6 +42,10 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnFunc.clicked.connect(self.histogramaGlobal)
         self.btnFunc1.clicked.connect(self.aplicarClahe)
         self.btnFunc2.clicked.connect(self.highBoost)
+        self.btnSegment.clicked.connect(self.recortar)
+        self.btnButterFreq.clicked.connect(self.butterFilterFreq)
+        self.btnLaplacian.clicked.connect(self.laplaciano)
+        
         x=np.array(np.arange(0,256,1)).reshape((1,256))
         xMat=np.repeat(x,256, axis=0)
         yMat=xMat.transpose()
@@ -136,12 +138,6 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.wVer.plotHisto.plot(xhist, title=('Histograma Vertical'))         
         self.wVer.plotHisto.setLabel('left','Intensidad de iluminacion' )
         self.wVer.plotHisto.setLabel('bottom','Cantidad de pixeles' )
-
-    def function1(self):
-        
-        
-        pg.image(self.test)
-        pg.image(np.subtract(255,self.img))
     
     def aplicarClahe(self):
 
@@ -204,6 +200,186 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.wEcu.plotHisto.setLabel('left','Intensidad de iluminacion' )
         self.wEcu.plotHisto.setLabel('bottom','Cantidad de pixeles' )
 
+    def butterFilterFreq(self):
+        
+        # Lectura de Imagenes
+        #imagen = cv2.imread('./img/c1anemia-381.jpg')
+        imagen_seg = cv2.imread('./img/c1anemia-381bn-ojo-segment.jpg')
+        # Conversion a escala de grices
+        eg_1 = cv2.cvtColor(self.img,cv2.COLOR_RGB2GRAY)
+        eg_2 = cv2.cvtColor(self.img,cv2.COLOR_RGB2LAB)
+        l_channel,a_channel,b_channel = cv2.split(eg_2)
+
+        Nf = eg_1.shape[0]
+        Nc = eg_1.shape[1]
+
+        # Transformada de Fourier 2D
+        tf = np.fft.fftshift(np.fft.fft2(eg_1))
+        tfAbs = np.abs(tf)
+
+        #Espectro en escala Logaritmica
+        tfAbs_log = np.log10(1+tfAbs)
+        tfAbs_log_norm = np.uint8(255*tfAbs_log/np.max(tfAbs_log))
+
+        #Diseño del Filtro Paso Alto Butterworth
+
+        F1 = np.arange(-Nf/2+1,Nf/2+1,1)
+        F2 = np.arange(-Nc/2+1,Nc/2+1,1)
+        [X,Y] = np.meshgrid(F2,F1)
+
+        #Parametros Distancia Euclidiana - Frecuencia de corte - Numero de Orden del filtro
+        D = np.sqrt((X**2)+(Y**2))
+        D = D/np.max(D)
+        Do = 0.0006#0.0007 #Listo
+        Do2 = 0.5
+        n = 3
+        
+        Huv2 = 1/(1+np.power(D/Do2,2*n))
+        Huv = 1/(1+np.power(D/Do,2*n))              
+        Huv = 1 - Huv #Filtro Paso Alto Butterworth
+        Huv3 = Huv*Huv2
+
+        #Aplicamos el filtro
+        Guv = Huv3*tf
+        Guv_abs = np.abs(Guv)
+        Guv_abs_log = np.log10(1+Guv_abs)
+        Guv_abs_log_norm = np.uint8(255*Guv_abs_log/np.max(Guv_abs_log))
+
+        # IFFT2
+        gxy = np.fft.ifft2(Guv)
+        gxy = np.abs(gxy)
+        #gxy = np.fft.fftshift(gxy)
+        gxy = np.uint8(gxy)
+
+        #Imprimir
+        result = cv2.merge((gxy,a_channel,b_channel))
+        displayable = cv2.cvtColor(result,cv2.COLOR_LAB2RGB)
+        origi = pg.image(self.img)
+        origi.setWindowTitle("Imagen Original")
+        filtered = pg.image(displayable)
+        filtered.setWindowTitle("Imagen Filtrada")
+
+    def laplaciano(self):
+        y,u,v = cv2.split(cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV))
+        
+        #calcLaplacian
+
+        img = cv2.medianBlur(y, 11)                                                # <----- comentar o descomentar para aplicar BLUR
+        
+        
+        #displImage
+        N,M = img.shape
+        Xvect = np.arange(0,M).reshape((1,M))
+        Yvect = np.arange(0,N).reshape((N,1))
+        Xmatr = np.repeat(Xvect,N,axis=0)
+        Ymatr = np.repeat(Yvect,M,axis=1)
+        dispImg = np.multiply(img,np.power(-1,Xmatr+Ymatr))
+
+        fftImg = np.fft.fft2(dispImg)
+        #createEuclideanValues
+        N,M = img.shape
+        Uvect = np.arange(-M/2,M/2).reshape((1,M))
+        Vvect = np.arange(-N/2,N/2).reshape((N,1))
+        Vmatr = np.repeat(Vvect,M,axis=1)
+        Umatr = np.repeat(Uvect,N,axis=0)        
+        mask = np.add(np.power(Umatr,2),np.power(Vmatr,2)) 
+        
+        #createFilter
+        maskForLaplacian = 1 + mask
+        
+        fftImgToInvert = np.multiply(maskForLaplacian,fftImg)
+
+        imageInverted = np.abs(np.fft.ifft2(fftImgToInvert))
+ 
+        imageInverted = np.uint8(255*imageInverted/np.max(imageInverted))
+    
+        clahe = cv2.createCLAHE(clipLimit=3., tileGridSize=(8,8))                     # <----- comentar o descomentar para aplicar CLAHE
+        yModified=clahe.apply(imageInverted)                                      # <----- comentar o descomentar para aplicar CLAHE
+        
+
+        imageModified = cv2.merge((yModified,u,v))
+        #Display results
+
+        
+        displayable = cv2.cvtColor(imageModified,cv2.COLOR_YUV2RGB)
+        origi = pg.image(self.img)
+        origi.setWindowTitle("Imagen Original")
+        filtered = pg.image(displayable)
+        filtered.setWindowTitle("Imagen Filtrada")
+
+        
+
+        
+    def recortar(self):
+        # img = cv2.imread('img.png', cv2.IMREAD_COLOR)
+        # img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+        imag = cv2.cvtColor(self.img,cv2.COLOR_BGR2YUV)
+        
+        imag[:,:,0] = cv2.equalizeHist(imag[:,:,0])
+        
+        # img[:,:,0] = cv2.equalizeHist(img[:,:,0])
+        # im   g = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
+        # # print(img)
+        # # Convert to gray-scale
+        # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        imag = cv2.cvtColor(imag, cv2.COLOR_YUV2BGR)
+        imhs = cv2.cvtColor(imag,cv2.COLOR_BGR2HSV)
+        h,s,v = cv2.split(imhs)
+        # # Blur the image to reduce noise
+        hBlur = cv2.medianBlur(h, 11)
+        # hBlur = cv2.medianBlur(hBlur, 11)
+        ret2,_ = cv2.threshold(hBlur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        ret2,_ = cv2.threshold(hBlur[hBlur>ret2],0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        print("umbral:",ret2)
+        mascara=hBlur.copy()
+        mascara[mascara<=ret2]=0
+        mascara[mascara!=0]=1
+        mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
+        mascara=morphology.remove_small_objects(mascara,5000,connectivity=10,in_place=True)
+        mascara=mascara.astype(np.uint8)
+        # kernel=cv2.getStructuringElement(cv2.MORPH_CROSS,(71,71))
+        # # mascara = cv2.morphologyEx(mascara, cv2.MORPH_CLOSE, kernel)
+        # mascara=cv2.dilate(mascara,kernel,iterations = 1)
+        
+        #     mascara=mascara*255
+        yhisto=mascara.sum(axis=0)/len(mascara)
+        xhisto=mascara.sum(axis=1)/len(mascara)
+        # if xhisto.max()<yhisto.max():
+        #     yhisto=mascara[:yhisto.max(),:].sum(axis=0)
+        # print(np.where(yhisto==np.max(yhisto))[0][0])
+        # macara=mascara[:np.where(yhisto==np.max(yhisto))[0][0],]
+        
+        if np.max(xhisto)>np.max(yhisto):
+            index1=np.where(xhisto==np.max(xhisto))[0][0]
+            mascara=mascara[index1-800:index1+800,:]            
+            yhisto=mascara.sum(axis=0)/len(mascara)
+            index2=np.where(yhisto==np.max(yhisto))[0][0]
+            mascara=mascara[:,index2-800:index2+800]
+            imag=imag[index1-800:index1+800,index2-800:index2+800]
+            
+        else:
+            
+            index2=np.where(yhisto==np.max(yhisto))[0][0]
+            mascara=mascara[:,index2-800:index2+800]
+            xhisto=mascara.sum(axis=1)/len(mascara)
+            index1=np.where(xhisto==np.max(xhisto))[0][0]
+            mascara=mascara[index1-800:index1+800,:]
+            imag=imag[index1-800:index1+800,index2-800:index2+800]
+            
+            
+        #print(mascara)
+        imag = cv2.cvtColor(imag,cv2.COLOR_BGR2GRAY)
+        imgmascara= cv2.bitwise_and(imag,imag,mask = mascara)
+        
+        # Print images
+        #print(imag)
+        
+        displayable = cv2.cvtColor(imag,cv2.COLOR_GRAY2RGB)
+        origi = pg.image(self.img)
+        origi.setWindowTitle("Imagen Original")
+        filtered = pg.image(displayable)
+        filtered.setWindowTitle("Imagen Filtrada")
+        
     def normHistogram(self):
         self.wNormGlob = Window2()
         self.wNormGlob.plotHisto = PlotWidget(self.wNormGlob.groupBox_3)
