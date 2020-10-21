@@ -206,8 +206,14 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         #imagen = cv2.imread('./img/c1anemia-381.jpg')
         imagen_seg = cv2.imread('./img/c1anemia-381bn-ojo-segment.jpg')
         # Conversion a escala de grices
-        eg_1 = cv2.cvtColor(self.img,cv2.COLOR_RGB2GRAY)
-        eg_2 = cv2.cvtColor(self.img,cv2.COLOR_RGB2LAB)
+
+        
+
+        eg_1 = cv2.cvtColor(self.imag,cv2.COLOR_RGB2GRAY)
+        eg_2 = cv2.cvtColor(self.imag,cv2.COLOR_RGB2LAB)
+
+        #eg_1 = cv2.cvtColor(self.img,cv2.COLOR_RGB2GRAY)
+        #eg_2 = cv2.cvtColor(self.img,cv2.COLOR_RGB2LAB)
         l_channel,a_channel,b_channel = cv2.split(eg_2)
 
         Nf = eg_1.shape[0]
@@ -254,13 +260,14 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         #Imprimir
         result = cv2.merge((gxy,a_channel,b_channel))
         displayable = cv2.cvtColor(result,cv2.COLOR_LAB2RGB)
-        origi = pg.image(self.img)
+        origi = pg.image(self.imag)
         origi.setWindowTitle("Imagen Original")
         filtered = pg.image(displayable)
         filtered.setWindowTitle("Imagen Filtrada")
 
     def laplaciano(self):
-        y,u,v = cv2.split(cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV))
+        #y,u,v = cv2.split(cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV))
+        y,u,v = cv2.split(cv2.cvtColor(self.imag,cv2.COLOR_RGB2YUV))
         
         #calcLaplacian
 
@@ -302,7 +309,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
         
         displayable = cv2.cvtColor(imageModified,cv2.COLOR_YUV2RGB)
-        origi = pg.image(self.img)
+        origi = pg.image(self.imag)
         origi.setWindowTitle("Imagen Original")
         filtered = pg.image(displayable)
         filtered.setWindowTitle("Imagen Filtrada")
@@ -371,17 +378,18 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             print(imag.shape)
             
         #print(mascara)
-        
+        imag = imgmascara = cv2.cvtColor(imag, cv2.COLOR_BGR2RGB)
         imgmascara= cv2.bitwise_and(imag,imag,mask = mascara)
-        
+        imgmascara = cv2.cvtColor(imgmascara, cv2.COLOR_BGR2RGB)
         # Print images
         #print(imag)
         
+        self.imag = imag
         #displayable = cv2.cvtColor(imgmascara,cv2.COLOR_BGR2RGB)
         origi = pg.image(self.img)
         origi.setWindowTitle("Imagen Original")
-        filtered = pg.image(imgmascara)
-        filtered.setWindowTitle("Imagen Filtrada")
+        filtered = pg.image(imag)
+        filtered.setWindowTitle("Imagen Segmentada")
         
     def normHistogram(self):
         self.wNormGlob = Window2()
