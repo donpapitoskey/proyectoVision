@@ -313,7 +313,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
     def recortar(self):
         # img = cv2.imread('img.png', cv2.IMREAD_COLOR)
         # img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-        imag = cv2.cvtColor(self.img,cv2.COLOR_BGR2YUV)
+        imag = cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV)
         
         imag[:,:,0] = cv2.equalizeHist(imag[:,:,0])
         
@@ -323,8 +323,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         # # Convert to gray-scale
         # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         imag = cv2.cvtColor(imag, cv2.COLOR_YUV2BGR)
-        imhs = cv2.cvtColor(imag,cv2.COLOR_BGR2HSV)
-        h,s,v = cv2.split(imhs)
+        h = cv2.cvtColor(imag, cv2.COLOR_BGR2HSV)[:,:,0]
         # # Blur the image to reduce noise
         hBlur = cv2.medianBlur(h, 11)
         # hBlur = cv2.medianBlur(hBlur, 11)
@@ -355,8 +354,10 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             yhisto=mascara.sum(axis=0)/len(mascara)
             index2=np.where(yhisto==np.max(yhisto))[0][0]
             mascara=mascara[:,index2-800:index2+800]
+            print(index1,index2)
+            print(imag.shape)
             imag=imag[index1-800:index1+800,index2-800:index2+800]
-            
+            print(imag.shape)
         else:
             
             index2=np.where(yhisto==np.max(yhisto))[0][0]
@@ -364,20 +365,22 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             xhisto=mascara.sum(axis=1)/len(mascara)
             index1=np.where(xhisto==np.max(xhisto))[0][0]
             mascara=mascara[index1-800:index1+800,:]
+            print(index1,index2)
+            print(imag.shape)
             imag=imag[index1-800:index1+800,index2-800:index2+800]
-            
+            print(imag.shape)
             
         #print(mascara)
-        imag = cv2.cvtColor(imag,cv2.COLOR_BGR2GRAY)
+        
         imgmascara= cv2.bitwise_and(imag,imag,mask = mascara)
         
         # Print images
         #print(imag)
         
-        displayable = cv2.cvtColor(imag,cv2.COLOR_GRAY2RGB)
+        #displayable = cv2.cvtColor(imgmascara,cv2.COLOR_BGR2RGB)
         origi = pg.image(self.img)
         origi.setWindowTitle("Imagen Original")
-        filtered = pg.image(displayable)
+        filtered = pg.image(imgmascara)
         filtered.setWindowTitle("Imagen Filtrada")
         
     def normHistogram(self):
