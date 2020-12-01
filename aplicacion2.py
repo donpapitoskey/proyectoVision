@@ -271,8 +271,8 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         
         #calcLaplacian
 
-        img = cv2.medianBlur(y, 11)                                                # <----- comentar o descomentar para aplicar BLUR
-        
+        #img = cv2.medianBlur(y, 11)                                                # <----- comentar o descomentar para aplicar BLUR
+        img = y
         
         #displImage
         N,M = img.shape
@@ -380,7 +380,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         #print(mascara)
         imag = imgmascara = cv2.cvtColor(imag, cv2.COLOR_BGR2RGB)
         imgmascara= cv2.bitwise_and(imag,imag,mask = mascara)
-        imgmascara = cv2.cvtColor(imgmascara, cv2.COLOR_BGR2RGB)
+        
         # Print images
         #print(imag)
         
@@ -388,7 +388,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         #displayable = cv2.cvtColor(imgmascara,cv2.COLOR_BGR2RGB)
         origi = pg.image(self.img)
         origi.setWindowTitle("Imagen Original")
-        filtered = pg.image(imag)
+        filtered = pg.image(imgmascara)
         filtered.setWindowTitle("Imagen Segmentada")
         
     def normHistogram(self):
