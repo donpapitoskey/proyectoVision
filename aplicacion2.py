@@ -570,6 +570,8 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         origi.setWindowTitle("Imagen Original")
         filtered = pg.image(imgmascara)
         filtered.setWindowTitle("Imagen Segmentada")
+        filtered = pg.image(mascara)
+        filtered.setWindowTitle("Imagen Máscara")
             
     def recortar(self):
         imag = cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV)
