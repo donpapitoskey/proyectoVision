@@ -42,7 +42,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnFunc.clicked.connect(self.histogramaGlobal)
         self.btnFunc1.clicked.connect(self.aplicarClahe)
         self.btnFunc2.clicked.connect(self.highBoost)
-        self.btnSegment.clicked.connect(self.recortar)
+        self.btnSegment.clicked.connect(self.recortar2)
         self.btnButterFreq.clicked.connect(self.butterFilterFreq)
         self.btnLaplacian.clicked.connect(self.laplaciano)
         
@@ -315,25 +315,270 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         filtered.setWindowTitle("Imagen Filtrada")
 
         
-
-        
-    def recortar(self):
-        # img = cv2.imread('img.png', cv2.IMREAD_COLOR)
-        # img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-        imag = cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV)
-        
-        imag[:,:,0] = cv2.equalizeHist(imag[:,:,0])
-        
+    def recortar2(self):
+        img = cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV)
+        img[:,:,0] = cv2.equalizeHist(img[:,:,0])
         # img[:,:,0] = cv2.equalizeHist(img[:,:,0])
-        # im   g = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
+        img = cv2.cvtColor(img,cv2.COLOR_YUV2BGR)
+    
+        #clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+        #img[:,:,0] = clahe.apply(img[:,:,0])
+
+
+        # img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
         # # print(img)
         # # Convert to gray-scale
         # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        h = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)[:,:,0]
+        # # Blur the image to reduce noise
+        hBlur = cv2.medianBlur(h, 11)
+        hBlur = cv2.medianBlur(hBlur, 11)
+        #hBlur = cv2.medianBlur(hBlur, 11)
+        ###graficar(hBlur)
+
+        ret2,_ = cv2.threshold(hBlur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        ret2,_ = cv2.threshold(hBlur[hBlur>ret2],0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        ret2,_ = cv2.threshold(hBlur[hBlur>ret2],0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        
+        print("umbral:",ret2)
+        mascara=hBlur.copy()
+        mascara[mascara<=ret2]=0
+        mascara[mascara!=0]=1
+
+        kernel1 = np.ones((7,7),np.uint8)### agrego kernel de las morfologicas
+        kernel2 = np.ones((27,27),np.uint8)
+        mascara=cv2.dilate(mascara, kernel1,iterations = 1)
+        mascara=cv2.morphologyEx(mascara, cv2.MORPH_CLOSE, kernel2)
+
+        mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
+        mascara=morphology.remove_small_objects(mascara,6000,connectivity=10,in_place=True)
+
+        mascara=mascara.astype(np.uint8)
+
+        # kernel=cv2.getStructuringElement(cv2.MORPH_CROSS,(71,71))
+        # # mascara = cv2.morphologyEx(mascara, cv2.MORPH_CLOSE, kernel)
+        # mascara=cv2.dilate(mascara,kernel,iterations = 1)
+        #graficar(mascara)
+        #print(mascara.shape)
+        valox=mascara.shape
+        #print('este es x ',valox[1])
+        #     mascara=mascara*255
+        yhisto=mascara.sum(axis=0)/len(mascara)
+        xhisto=mascara.sum(axis=1)/len(mascara)
+        # if xhisto.max()<yhisto.max():
+        #     yhisto=mascara[:yhisto.max(),:].sum(axis=0)
+        # print(np.where(yhisto==np.max(yhisto))[0][0])
+        # macara=mascara[:np.where(yhisto==np.max(yhisto))[0][0],]
+        if np.max(xhisto)>np.max(yhisto):
+            #print(np.where(xhisto==np.max(xhisto))[0][0])
+            index1=np.where(xhisto==np.max(xhisto))[0][0]
+            #print('el max es x')
+            
+            x1= index1+800 ##izq
+            x2= index1-800 ##derec
+
+            #print('index1,x1,x2', index1,x1,x2)
+            
+
+            if x1>4160:  
+                x11= x1-4160
+                mascara=mascara[index1-800-x11:index1+800-x11,:] 
+            
+                img=img[index1-800-x11:index1+800-x11,:] 
+                ###graficar(img)
+
+                ###graficar(mascara)
+                #print('mayor a 3120')
+            
+            elif x2<0:
+                x22=abs(x2)
+                mascara=mascara[index1-800+x22:index1+800+x22,:]
+
+                img=img[index1-800+x22:index1+800+x22,:]
+                ###graficar(img)
+
+                ###graficar(mascara)
+                #print('menor a 0 en x')
+
+            else:
+                mascara=mascara[index1-800:index1+800,:]
+                ###plt.plot(xhisto)
+                ###plt.show()
+                ##plt.plot(yhisto)
+                ###graficar(mascara)
+            
+                img=img[index1-800:index1+800,:]
+                ###graficar(img)
+
+                #print('en x ',mascara)
+                #print('todo bien')
+            
+            yhisto=mascara.sum(axis=0)/len(mascara)
+            ###plt.plot(yhisto)
+            index2=np.where(yhisto==np.max(yhisto))[0][0]
+            #print('index',index2)
+
+            y1= index2+800 ##izq
+            y2= index2-800 ##derec
+
+            #print('y1 y y2', y1,y2)
+        
+            if y1>3120:  
+                y11= y1-3120
+                mascara=mascara[:,index2-800-y11:index2+800-y11] 
+
+                img=img[:,index2-800-y11:index2+800-y11] 
+                ###graficar(img)
+
+                img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                ###graficar(img)
+
+                ###graficar(mascara)
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                ###graficar(imgmascara)
+            
+                #print('mayor a 4160')
+            
+            elif y2<0:
+                y22=abs(y2)
+                mascara=mascara[:,index2-800+y22:index2+800+y22]
+
+                img=img[:,index2-800+y22:index2+800+y22]
+                ####graficar(img)
+
+                img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                ####graficar(img)
+
+                ###graficar(mascara)
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                ###graficar(imgmascara)
+
+                #print('menor a 0 en y')
+        
+            else: 
+                mascara=mascara[:,index2-800:index2+800]
+
+                img=img[:,index2-800:index2+800]
+                ###graficar(img)
+
+                img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                ###graficar(img)
+
+                ###graficar(mascara)
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                ###graficar(imgmascara)
+                #img=img[index1-800:index1+800,index2-800:index2+800]
+                #graficar(img)
+                #print('eSte es ', index2)
+                #print('todo bien')          
+    
+        else:
+
+            #print('el max es y')
+
+            index2=np.where(yhisto==np.max(yhisto))[0][0]
+            #print('index2',index2)
+            y1= index2+800 ##izq
+            y2= index2-800 ##derec
+
+            if y1>3120:
+                y11= y1-3120
+                mascara=mascara[:,index2-800-y11:index2+800-y11] 
+
+                img=img[:,index2-800-y11:index2+800-y11] 
+                ###graficar(img)
+
+                ###graficar(mascara)
+                #print('mayor a 4160 2')
+            
+            elif y2<0:
+                y22=abs(y2)
+                mascara=mascara[:,index2-800+y22:index2+800+y22]
+            
+                img=img[:,index2-800+y22:index2+800+y22]
+                ###graficar(img)
+            
+                #print('menor a 0 en y 2')
+                ###graficar(mascara)
+
+            else: 
+                mascara=mascara[:,index2-800:index2+800]
+                ###graficar(mascara)
+                #print('todo bien')
+
+                img=img[:,index2-800:index2+800]
+                ###graficar(img)
+            
+            xhisto=mascara.sum(axis=1)/len(mascara)
+            #plt.plot(yhisto)
+            index1=np.where(xhisto==np.max(xhisto))[0][0]
+        
+        
+            x1= index1+800 ##izq
+            x2= index1-800 ##derec
+        
+            if x1>4160:  
+                x11= x1-4160
+                mascara=mascara[index1-800-x11:index1+800-x11,:] 
+
+                img=img[index1-800-x11:index1+800-x11,:] 
+                ###graficar(img)
+
+                img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                ###graficar(img)
+        
+                ###graficar(mascara)
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                ###graficar(imgmascara)
+
+                #print('mayor a 3120 2')
+            
+            
+            elif x2<0:
+                x22=abs(x2)
+                mascara=mascara[index1-800+x22:index1+800+x22,:]
+
+                img=img[index1-800+x22:index1+800+x22,:]
+                ###graficar(img)
+
+                img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                ####graficar(img)
+
+                ###graficar(mascara)
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                ###graficar(imgmascara)
+
+                #print('menor a 0 en x 2')
+
+            else:
+                mascara=mascara[index1-800:index1+800,:]
+
+                img=img[index1-800:index1+800,:]
+                ###graficar(img)
+
+                img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                ###graficar(img)
+
+                ###graficar(mascara)
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+
+                ###graficar(imgmascara)
+                #print('todo bien')
+                #img=img[index1-800:index1+800,index2-800:index2+800]
+                #graficar(img)
+        origi = pg.image(self.img)
+        origi.setWindowTitle("Imagen Original")
+        filtered = pg.image(imgmascara)
+        filtered.setWindowTitle("Imagen Segmentada")
+            
+    def recortar(self):
+        imag = cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV)
+        
+        imag[:,:,0] = cv2.equalizeHist(imag[:,:,0])
         imag = cv2.cvtColor(imag, cv2.COLOR_YUV2BGR)
         h = cv2.cvtColor(imag, cv2.COLOR_BGR2HSV)[:,:,0]
         # # Blur the image to reduce noise
         hBlur = cv2.medianBlur(h, 11)
-        # hBlur = cv2.medianBlur(hBlur, 11)
         ret2,_ = cv2.threshold(hBlur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         ret2,_ = cv2.threshold(hBlur[hBlur>ret2],0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         print("umbral:",ret2)
@@ -343,17 +588,9 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
         mascara=morphology.remove_small_objects(mascara,5000,connectivity=10,in_place=True)
         mascara=mascara.astype(np.uint8)
-        # kernel=cv2.getStructuringElement(cv2.MORPH_CROSS,(71,71))
-        # # mascara = cv2.morphologyEx(mascara, cv2.MORPH_CLOSE, kernel)
-        # mascara=cv2.dilate(mascara,kernel,iterations = 1)
         
-        #     mascara=mascara*255
         yhisto=mascara.sum(axis=0)/len(mascara)
         xhisto=mascara.sum(axis=1)/len(mascara)
-        # if xhisto.max()<yhisto.max():
-        #     yhisto=mascara[:yhisto.max(),:].sum(axis=0)
-        # print(np.where(yhisto==np.max(yhisto))[0][0])
-        # macara=mascara[:np.where(yhisto==np.max(yhisto))[0][0],]
         
         if np.max(xhisto)>np.max(yhisto):
             index1=np.where(xhisto==np.max(xhisto))[0][0]
@@ -361,10 +598,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             yhisto=mascara.sum(axis=0)/len(mascara)
             index2=np.where(yhisto==np.max(yhisto))[0][0]
             mascara=mascara[:,index2-800:index2+800]
-            print(index1,index2)
-            print(imag.shape)
             imag=imag[index1-800:index1+800,index2-800:index2+800]
-            print(imag.shape)
         else:
             
             index2=np.where(yhisto==np.max(yhisto))[0][0]
@@ -372,20 +606,13 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             xhisto=mascara.sum(axis=1)/len(mascara)
             index1=np.where(xhisto==np.max(xhisto))[0][0]
             mascara=mascara[index1-800:index1+800,:]
-            print(index1,index2)
-            print(imag.shape)
             imag=imag[index1-800:index1+800,index2-800:index2+800]
-            print(imag.shape)
             
-        #print(mascara)
         imag = imgmascara = cv2.cvtColor(imag, cv2.COLOR_BGR2RGB)
         imgmascara= cv2.bitwise_and(imag,imag,mask = mascara)
         
         # Print images
-        #print(imag)
-        
         self.imag = imag
-        #displayable = cv2.cvtColor(imgmascara,cv2.COLOR_BGR2RGB)
         origi = pg.image(self.img)
         origi.setWindowTitle("Imagen Original")
         filtered = pg.image(imgmascara)
