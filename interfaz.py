@@ -231,7 +231,7 @@ class Ui_MainWindow(object):
         self.btnButterFreq.setText(_translate("MainWindow", "Butterworth"))
         self.btnLaplacian.setText(_translate("MainWindow", "Laplaciano"))
         self.btnFunc2.setText(_translate("MainWindow", "High Boost"))
-        self.label.setText(_translate("MainWindow", "Visión Artificial: Fase 3 "))
+        self.label.setText(_translate("MainWindow", "Visión Artificial: Fase 4 "))
         self.btnSelecArchivo.setText(_translate("MainWindow", "Seleccionar archivo"))
 from pyqtgraph import PlotWidget
 
