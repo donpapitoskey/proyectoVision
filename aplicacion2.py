@@ -315,13 +315,29 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         filtered = pg.image(displayable)
         filtered.setWindowTitle("Imagen Filtrada")
     def contorno(self):
-        print(self.commonImage)
+        #print(self.commonImage)
         #imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
         contoured = pg.image(self.commonMask)
         contours, hierarchy = cv2.findContours(self.commonMask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-        img = cv2.drawContours(self.commonImage, contours, -1, (0,255,0), 3)
-        contoured = pg.image(img)
-        contoured.setWindowTitle("Contorno")
+        # contour drawing
+        #img = cv2.drawContours(self.commonImage, contours, -1, (0,255,0), 3)
+        #contoured = pg.image(img)
+        #contoured.setWindowTitle("Contorno")
+        # hulll= and defects calculation
+        cnt = contours[0]
+        hull = cv2.convexHull(cnt, returnPoints= False)
+        defects = cv2.convexityDefects(cnt, hull)
+        img2 = self.commonImage
+        for i in range(defects.shape[0]):
+            s,e,f,d = defects[i,0]
+            start = tuple(cnt[s][0])
+            end = tuple(cnt[e][0])
+            far = tuple(cnt[f][0])
+            cv2.line(self.img, start,end, [255,0,255],2)
+
+        #img2 = cv2.drawContours(self.commonImage, hull, -1, (255,0,255), 3)
+        contouredHull = pg.image(self.img)
+        contouredHull.setWindowTitle("Hull")
 
         
     def recortar2(self):
