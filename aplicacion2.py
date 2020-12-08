@@ -318,25 +318,25 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         #print(self.commonImage)
         #imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
         contoured = pg.image(self.commonMask)
-        contours, hierarchy = cv2.findContours(self.commonMask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(self.commonMask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE) # extrae cotorno
         # contour drawing
-        #img = cv2.drawContours(self.commonImage, contours, -1, (0,255,0), 3)
+        img = cv2.drawContours(self.img, contours, -1, (0,255,0), 3) #dibuja los contornos
         #contoured = pg.image(img)
         #contoured.setWindowTitle("Contorno")
         # hulll= and defects calculation
-        cnt = contours[0]
-        hull = cv2.convexHull(cnt, returnPoints= False)
-        defects = cv2.convexityDefects(cnt, hull)
-        img2 = self.commonImage
-        for i in range(defects.shape[0]):
-            s,e,f,d = defects[i,0]
-            start = tuple(cnt[s][0])
-            end = tuple(cnt[e][0])
-            far = tuple(cnt[f][0])
-            cv2.line(self.img, start,end, [255,0,255],2)
+        #cnt = contours[0] # extrae parámetros para hull
+        #hull = cv2.convexHull(cnt, returnPoints= False) #calcula los puntos de cambio convexo
+        #defects = cv2.convexityDefects(cnt, hull) # calcula los defectos
+        #img2 = self.commonImage
+        #for i in range(defects.shape[0]): #recorre arreglo de defectos
+            #s,e,f,d = defects[i,0] # extrae parámetros de defectos -> inicio (s), final(e), 
+            #start = tuple(cnt[s][0]) #ubica el punto de inicio
+            #end = tuple(cnt[e][0]) #ubica el punto final
+            #far = tuple(cnt[f][0]) #ubica los puntos alejados
+            #cv2.line(self.img, start,end, [255,0,255],2) # dibuja los puntos exteriores
 
         #img2 = cv2.drawContours(self.commonImage, hull, -1, (255,0,255), 3)
-        contouredHull = pg.image(self.img)
+        contouredHull = pg.image(img)
         contouredHull.setWindowTitle("Hull")
 
         
