@@ -46,7 +46,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnButterFreq.clicked.connect(self.butterFilterFreq)
         self.btnLaplacian.clicked.connect(self.laplaciano)
         self.btnContorno.clicked.connect(self.contorno)
-        
+        self.btnMoments.clicked.connect(self.momentos)
         x=np.array(np.arange(0,256,1)).reshape((1,256))
         xMat=np.repeat(x,256, axis=0)
         yMat=xMat.transpose()
@@ -339,7 +339,37 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         contouredHull = pg.image(img)
         contouredHull.setWindowTitle("Hull")
 
-        
+    def momentos(self):
+        # Calculo de canal de luminancia
+        eg_2 = cv2.cvtColor(self.commonImage, cv2.COLOR_RGB2LAB)
+        l_channel, a_channel, b_channel = cv2.split(eg_2)
+
+        # Calculo de Histograma Global normalizado
+        h_1 = cv2.calcHist([self.commonImage], [0], None, [256], [0, 255])
+        h_1 = h_1 / sum(h_1)
+        #h_2 = cv2.calcHist([l_channel], [0], None, [256], [0, 255])
+        #h_2 = h_2 / sum(h_2)
+        # Vector con niveles de gris normalizado
+        gris = np.arange(256) / 255
+        h_11 = np.zeros(256)
+        moments = np.zeros(6)
+        for i in range(256):
+            h_11[i] = h_1[i][0]
+
+        moments[0] = sum(h_11 * gris)
+        # m = moments[1]*np.ones(256)
+        # print(h_1)
+        for j in range(1, 6):
+            moments[j] = sum(((gris - moments[0]) ** (j + 1)) * h_11)
+
+        moments = moments * 256
+        print('Intensidad promedio =',moments[0])
+        print('Desviación estándar =',moments[1])
+        print('Suavidad =',moments[2])
+        print('Asimetría =',moments[3])
+        print('Uniformidad =',moments[4])
+        print('Entropía =',moments[5])
+
     def recortar2(self):
         img = cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV)
         img[:,:,0] = cv2.equalizeHist(img[:,:,0])
