@@ -45,6 +45,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnSegment.clicked.connect(self.recortar2)
         self.btnButterFreq.clicked.connect(self.butterFilterFreq)
         self.btnLaplacian.clicked.connect(self.laplaciano)
+        self.btnContorno.clicked.connect(self.contorno)
         
         x=np.array(np.arange(0,256,1)).reshape((1,256))
         xMat=np.repeat(x,256, axis=0)
@@ -313,6 +314,14 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         origi.setWindowTitle("Imagen Original")
         filtered = pg.image(displayable)
         filtered.setWindowTitle("Imagen Filtrada")
+    def contorno(self):
+        print(self.commonImage)
+        #imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+        contoured = pg.image(self.commonMask)
+        contours, hierarchy = cv2.findContours(self.commonMask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+        img = cv2.drawContours(self.commonImage, contours, -1, (0,255,0), 3)
+        contoured = pg.image(img)
+        contoured.setWindowTitle("Contorno")
 
         
     def recortar2(self):
@@ -567,6 +576,8 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 #img=img[index1-800:index1+800,index2-800:index2+800]
                 #graficar(img)
         origi = pg.image(self.img)
+        self.commonMask = mascara
+        self.commonImage = imgmascara
         origi.setWindowTitle("Imagen Original")
         filtered = pg.image(imgmascara)
         filtered.setWindowTitle("Imagen Segmentada")
