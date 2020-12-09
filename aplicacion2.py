@@ -318,11 +318,11 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
     def contorno(self):
         #print(self.commonImage)
         #imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
-        contoured = pg.image(self.commonMask)
+        #contoured = pg.image(self.commonMask)
         contours, hierarchy = cv2.findContours(self.commonMask,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE) # extrae cotorno
         # contour drawing
-        print(contours)
-        img = cv2.drawContours(self.commonMask, contours, -1, (0,255,0), 3) #dibuja los contornos
+        #print(contours)
+        img = cv2.drawContours(self.img, contours, -1, (0,255,0), 3) #dibuja los contornos
         #contoured = pg.image(img)
         #contoured.setWindowTitle("Contorno")
         # hulll= and defects calculation
@@ -451,7 +451,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 ###graficar(img)
 
                 ###graficar(mascara)
-                print('mayor a 3120')
+                #print('mayor a 3120')
             
             elif x2<0:
                 x22=abs(x2)
@@ -461,7 +461,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 ###graficar(img)
 
                 ###graficar(mascara)
-                print('menor a 0 en x')
+                #print('menor a 0 en x')
 
             else:
                 mascara=mascara[index1-800:index1+800,:]
@@ -474,7 +474,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 ###graficar(img)
 
                 #print('en x ',mascara)
-                print('todo bien primer else')
+                #print('todo bien primer else')
             
             yhisto=mascara.sum(axis=0)/len(mascara)
             ###plt.plot(yhisto)
@@ -500,7 +500,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
                 ###graficar(imgmascara)
             
-                print('mayor a 4160')
+                #print('mayor a 4160')
             
             elif y2<0:
                 y22=abs(y2)
@@ -516,7 +516,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
                 ###graficar(imgmascara)
 
-                print('menor a 0 en y')
+                #print('menor a 0 en y')
         
             else: 
                 mascara=mascara[:,index2-800:index2+800]
@@ -533,7 +533,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 #img=img[index1-800:index1+800,index2-800:index2+800]
                 #graficar(img)
                 #print('eSte es ', index2)
-                print('todo bien en primer macroif')          
+                #print('todo bien en primer macroif')          
         
         else:
 
@@ -552,7 +552,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 ###graficar(img)
 
                 ###graficar(mascara)
-                print('mayor a 4160 2')
+                #print('mayor a 4160 2')
             
             elif y2<0:
                 y22=abs(y2)
@@ -561,13 +561,13 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 img=img[:,index2-800+y22:index2+800+y22]
                 ###graficar(img)
                 
-                print('menor a 0 en y 2')
+                #print('menor a 0 en y 2')
                 ###graficar(mascara)
 
             else: 
                 mascara=mascara[:,index2-800:index2+800]
                 ###graficar(mascara)
-                print('todo bien penultimo')
+                #print('todo bien penultimo')
 
                 img=img[:,index2-800:index2+800]
                 ###graficar(img)
@@ -594,7 +594,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
                 ###graficar(imgmascara)
 
-                print('mayor a 3120 2')
+                #print('mayor a 3120 2')
             
             
             elif x2<0:
@@ -610,7 +610,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 ###graficar(mascara)
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
                 ###graficar(imgmascara)
-                print('menor a 0 en x 2')
+                #print('menor a 0 en x 2')
 
             else:
                 mascara=mascara[index1-800:index1+800,:]
@@ -626,13 +626,13 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
 
                 ###graficar(imgmascara)
-                print('todo bien')
+                #print('todo bien')
                 #img=img[index1-800:index1+800,index2-800:index2+800]
                 #graficar(img)
         origi = pg.image(self.img, transform = tr)
         self.commonMask = mascara
         self.commonImage = imgmascara
-        print('mi mascara.com ' ,np.sum(mascara))
+        #print('mi mascara.com ' ,np.sum(mascara))
         origi.setWindowTitle("Imagen Original")
         filtered = pg.image(imgmascara, transform = tr)
         filtered.setWindowTitle("Imagen Segmentada")
