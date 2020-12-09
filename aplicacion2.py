@@ -326,7 +326,18 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         #contoured = pg.image(img)
         #contoured.setWindowTitle("Contorno")
         # hulll= and defects calculation
-        #cnt = contours[0] # extrae parámetros para hull
+        cnt = contours[0] # extrae parámetros para hull
+        ellipse = cv2.fitEllipse(cnt)
+        (center, size, angle) = ellipse
+        print('Center of ellipse: ')
+        print('Y: ', center[0], '\t\t X: ', center[1])
+        print('Size of ellipse: ')
+        print('Height: ',size[0],'\t Width: ', size[1])
+        print('Angle of ellipse: ', angle)
+        M = cv2.moments(cnt)
+        img = cv2.ellipse(img,ellipse,(255,0,255),2)
+
+        
         #hull = cv2.convexHull(cnt, returnPoints= False) #calcula los puntos de cambio convexo
         #defects = cv2.convexityDefects(cnt, hull) # calcula los defectos
         #img2 = self.commonImage
@@ -339,7 +350,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
         #img2 = cv2.drawContours(self.commonImage, hull, -1, (255,0,255), 3)
         contouredHull = pg.image(img)
-        contouredHull.setWindowTitle("Hull")
+        contouredHull.setWindowTitle("Contour")
 
     def momentos(self):
         # Calculo de canal de luminancia
@@ -409,8 +420,6 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
         kernel1 = np.ones((7,7),np.uint8)### agrego kernel de las morfologicas
         kernel2 = np.ones((27,27),np.uint8)
-        tr =pg.QtGui.QTransform()
-        tr.rotate(-90)
         mascara=cv2.dilate(mascara, kernel1,iterations = 1)
         mascara=cv2.morphologyEx(mascara, cv2.MORPH_CLOSE, kernel2)
         mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
@@ -629,14 +638,16 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 #print('todo bien')
                 #img=img[index1-800:index1+800,index2-800:index2+800]
                 #graficar(img)
-        origi = pg.image(self.img, transform = tr)
+        tr =pg.QtGui.QTransform()
+        tr.rotate(90)
+        origi = pg.image(self.img)
         self.commonMask = mascara
         self.commonImage = imgmascara
         #print('mi mascara.com ' ,np.sum(mascara))
         origi.setWindowTitle("Imagen Original")
-        filtered = pg.image(imgmascara, transform = tr)
+        filtered = pg.image(imgmascara)
         filtered.setWindowTitle("Imagen Segmentada")
-        filtered = pg.image(mascara, transform = tr)
+        filtered = pg.image(mascara)
         filtered.setWindowTitle("Imagen Máscara")
             
     def recortar(self):
