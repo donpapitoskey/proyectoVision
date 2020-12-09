@@ -343,14 +343,17 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def momentos(self):
         # Calculo de canal de luminancia
-        eg_2 = cv2.cvtColor(self.commonImage, cv2.COLOR_RGB2LAB)
-        l_channel, a_channel, b_channel = cv2.split(eg_2)
+        eg_2 = cv2.cvtColor(self.commonImage, cv2.COLOR_BGR2GRAY)
 
-        # Calculo de Histograma Global normalizado
-        h_1 = cv2.calcHist([self.commonImage], [0], None, [256], [0, 255])
+        # Calculo de Histograma
+        h_1 = cv2.calcHist([eg_2], [0], None, [256], [0, 255])
+        # Eliminar zonas negras
+        h_1[0][0] = 0
+        #print(sum(h_1))
+        # Normalizar
         h_1 = h_1 / sum(h_1)
-        #h_2 = cv2.calcHist([l_channel], [0], None, [256], [0, 255])
-        #h_2 = h_2 / sum(h_2)
+
+
         # Vector con niveles de gris normalizado
         gris = np.arange(256) / 255
         h_11 = np.zeros(256)
@@ -359,15 +362,16 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             h_11[i] = h_1[i][0]
 
         moments[0] = sum(h_11 * gris)
-        # m = moments[1]*np.ones(256)
-        # print(h_1)
+
         for j in range(1, 6):
             moments[j] = sum(((gris - moments[0]) ** (j + 1)) * h_11)
 
         moments = moments * 256
+        moments[1] = (moments[1] * 256) ** (0.5)
+        R = 1 - (1 / (1 + (moments[2] / (256))))
         print('Intensidad promedio =',moments[0])
         print('Desviación estándar =',moments[1])
-        print('Suavidad =',moments[2])
+        print('Suavidad =',R)
         print('Asimetría =',moments[3])
         print('Uniformidad =',moments[4])
         print('Entropía =',moments[5])
