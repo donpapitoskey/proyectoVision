@@ -146,7 +146,8 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         lab = cv2.cvtColor(self.img, cv2.COLOR_RGB2LAB)  # convert from BGR to LAB color space
         l, a, b = cv2.split(lab)  # split on 3 different channels
         #pg.image(l)
-        origi = pg.image(self.img)
+        localImg = self.img.copy()
+        origi = pg.image(localImg)
         origi.setWindowTitle("Imagen Original")
         hist = cv2.calcHist([l], [0], None, [256], [0, 256])
         #plt.plot(hist, color='gray' )
@@ -155,8 +156,8 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         hist = cv2.calcHist([l2], [0], None, [256], [0, 256])
         #plt.plot(hist, color='gray' )
         lab = cv2.merge((l2,a,b))  # merge channels
-        img2 = cv2.cvtColor(lab, cv2.COLOR_LAB2RGB)  # convert from LAB to BGR
-        modified = pg.image( img2)
+        self.img = cv2.cvtColor(lab, cv2.COLOR_LAB2RGB)  # convert from LAB to BGR
+        modified = pg.image(self.img)
         modified.setWindowTitle("CLAHE")
     
     def highBoost(self):
@@ -173,10 +174,11 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         #Convolusion de mascara e imagen
         img_rst = cv2.filter2D(v_channel,-1,kernel)
         img_rst = cv2.merge((h_channel, s_channel, img_rst))
-        self.highboost = cv2.cvtColor(img_rst,cv2.COLOR_HSV2RGB)
-        origi = pg.image(self.img)
+        localImg = self.img.copy()
+        self.img = cv2.cvtColor(img_rst,cv2.COLOR_HSV2RGB)
+        origi = pg.image(localImg)
         origi.setWindowTitle("Imagen Original")
-        modified = pg.image(self.highboost)
+        modified = pg.image(self.img)
         modified.setWindowTitle("High Boost")
 
     def histogramaEcualizado(self):
