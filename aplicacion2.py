@@ -186,10 +186,12 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         h_channel,s_channel,v_channel = cv2.split(eg_1)
         eh = cv2.equalizeHist(v_channel)
         result = cv2.merge((h_channel,s_channel,eh))
-        modified = pg.image(cv2.cvtColor(result,cv2.COLOR_HSV2RGB))
-        modified.setWindowTitle("Histograma Ecualizado")
+        localImg = self.img.copy()
         origi = pg.image(self.img)
         origi.setWindowTitle("Imagen Original")
+        self.img = cv2.cvtColor(result,cv2.COLOR_HSV2RGB)
+        modified = pg.image(self.img)
+        modified.setWindowTitle("Histograma Ecualizado")
         h_eHSV = cv2.calcHist([eh],[0],None,[256],[0,256])
         h_eHSV=h_eHSV.reshape(-1)
         self.wEcu = Window2()
@@ -207,13 +209,12 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         
         # Lectura de Imagenes
         #imagen = cv2.imread('./img/c1anemia-381.jpg')
-        imagen_seg = cv2.imread('./img/c1anemia-381bn-ojo-segment.jpg')
         # Conversion a escala de grices
 
         
 
-        eg_1 = cv2.cvtColor(self.imag,cv2.COLOR_RGB2GRAY)
-        eg_2 = cv2.cvtColor(self.imag,cv2.COLOR_RGB2LAB)
+        eg_1 = cv2.cvtColor(self.img,cv2.COLOR_RGB2GRAY)
+        eg_2 = cv2.cvtColor(self.img,cv2.COLOR_RGB2LAB)
 
         #eg_1 = cv2.cvtColor(self.img,cv2.COLOR_RGB2GRAY)
         #eg_2 = cv2.cvtColor(self.img,cv2.COLOR_RGB2LAB)
@@ -262,15 +263,16 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
         #Imprimir
         result = cv2.merge((gxy,a_channel,b_channel))
-        displayable = cv2.cvtColor(result,cv2.COLOR_LAB2RGB)
-        origi = pg.image(self.imag)
+        localImage = self.img.copy()
+        self.img = cv2.cvtColor(result,cv2.COLOR_LAB2RGB)
+        origi = pg.image(localImage)
         origi.setWindowTitle("Imagen Original")
-        filtered = pg.image(displayable)
+        filtered = pg.image(self.img)
         filtered.setWindowTitle("Imagen Filtrada")
 
     def laplaciano(self):
         #y,u,v = cv2.split(cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV))
-        y,u,v = cv2.split(cv2.cvtColor(self.imag,cv2.COLOR_RGB2YUV))
+        y,u,v = cv2.split(cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV))
         
         #calcLaplacian
 
@@ -311,10 +313,12 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         #Display results
 
         
-        displayable = cv2.cvtColor(imageModified,cv2.COLOR_YUV2RGB)
-        origi = pg.image(self.imag)
+        
+        localImage = self.img.copy()
+        origi = pg.image(localImage)
         origi.setWindowTitle("Imagen Original")
-        filtered = pg.image(displayable)
+        self.img = cv2.cvtColor(imageModified,cv2.COLOR_YUV2RGB)
+        filtered = pg.image(self.Img)
         filtered.setWindowTitle("Imagen Filtrada")
         
     def contorno(self):
