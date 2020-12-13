@@ -318,7 +318,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         origi = pg.image(localImage)
         origi.setWindowTitle("Imagen Original")
         self.img = cv2.cvtColor(imageModified,cv2.COLOR_YUV2RGB)
-        filtered = pg.image(self.Img)
+        filtered = pg.image(self.img)
         filtered.setWindowTitle("Imagen Filtrada")
         
     def contorno(self):
@@ -392,13 +392,12 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         print('Asimetría =',moments[3])
         print('Uniformidad =',moments[4])
         print('Entropía =',moments[5])
-
+ 
     def recortar2(self):
         img = cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV)
         img[:,:,0] = cv2.equalizeHist(img[:,:,0])
         # img[:,:,0] = cv2.equalizeHist(img[:,:,0])
         img = cv2.cvtColor(img,cv2.COLOR_YUV2BGR)
-    
         #clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
         #img[:,:,0] = clahe.apply(img[:,:,0])
 
@@ -407,7 +406,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         # # print(img)
         # # Convert to gray-scale
         # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        h = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)[:,:,0]
+        h,s_channel,v_channel = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
         # # Blur the image to reduce noise
         hBlur = cv2.medianBlur(h, 11)
         hBlur = cv2.medianBlur(hBlur, 11)
@@ -421,17 +420,27 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         
         print("umbral:",ret2)
         mascara=hBlur.copy()
-        mascara[mascara<=ret2]=0
+        mascara[(mascara<=ret2) & (mascara>3)]=0 # trabajando canal h
         mascara[mascara!=0]=1
-
-        kernel1 = np.ones((7,7),np.uint8)### agrego kernel de las morfologicas
+        masked = np.multiply(mascara, v_channel) # sacamos canal v
+        masked[masked<=100]= 0  #trabajamos canal V
+        masked[masked>=195] = 0
+        maskedCopy = masked.copy()
+        masked[masked!=0] = 1
+        mascara = masked
+        partial2 = pg.image(mascara)
+        partial2.setWindowTitle("Mascara")
+        kernel1 = np.ones((5,5),np.uint8)### agrego kernel de las morfologicas
         kernel2 = np.ones((27,27),np.uint8)
         mascara=cv2.dilate(mascara, kernel1,iterations = 1)
         mascara=cv2.morphologyEx(mascara, cv2.MORPH_CLOSE, kernel2)
         mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
-        mascara=morphology.remove_small_objects(mascara,4000,connectivity=10,in_place=True)
+        mascara=morphology.remove_small_objects(mascara,3500,connectivity=10,in_place=True)
         mascara=mascara.astype(np.uint8)
-        
+        print(mascara.shape)
+        print(self.img.shape)
+        maskedImg= pg.image(maskedCopy)
+        maskedImg.setWindowTitle("Canal V")
         #pg.image(mascara)
         # kernel=cv2.getStructuringElement(cv2.MORPH_CROSS,(71,71))
         # # mascara = cv2.morphologyEx(mascara, cv2.MORPH_CLOSE, kernel)
