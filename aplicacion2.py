@@ -4,7 +4,10 @@ from PyQt5 import uic, QtWidgets
 from interfaz import *
 import sys
 import cv2 
+import pickle
 import pyqtgraph as pg
+import sklearn
+#from sklearn.linear_model import LogisticRegression
 from pyqtgraph.Qt import QtCore, QtGui
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QMainWindow
@@ -47,6 +50,8 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnLaplacian.clicked.connect(self.laplaciano)
         self.btnContorno.clicked.connect(self.contorno)
         self.btnMoments.clicked.connect(self.momentos)
+        self.btnPredict.clicked.connect(self.predecir)
+        self.model = pickle.load(open('logisticModel', 'rb'))
         x=np.array(np.arange(0,256,1)).reshape((1,256))
         xMat=np.repeat(x,256, axis=0)
         yMat=xMat.transpose()
@@ -270,6 +275,18 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         filtered = pg.image(self.img)
         filtered.setWindowTitle("Imagen Filtrada")
 
+    def predecir(self):
+        self.recortar2()
+        b,g,r = cv2.split(self.commonImage)
+        meanR = r.sum()/np.count_nonzero(r)
+        meanG = g.sum()/np.count_nonzero(g)
+        gray = cv2.cvtColor(self.commonImage, cv2.COLOR_BGR2GRAY)
+        eritemia = np.log10(meanR) - np.log10(meanG)
+        meanGray = gray.sum()/np.count_nonzero(gray)
+        printable = self.model.predict(np.reshape([eritemia, meanGray],(1,2)))
+        dictionary = {0:'Sin anemia', 1:'Con anemia'}
+        print(dictionary[printable[0]])
+
     def laplaciano(self):
         #y,u,v = cv2.split(cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV))
         y,u,v = cv2.split(cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV))
@@ -435,10 +452,17 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         mascara=cv2.dilate(mascara, kernel1,iterations = 1)
         mascara=cv2.morphologyEx(mascara, cv2.MORPH_CLOSE, kernel2)
         mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
-        mascara=morphology.remove_small_objects(mascara,3500,connectivity=10,in_place=True)
+        partialMasko = mascara.copy()
+        #mascara=morphology.remove_small_objects(mascara,3500,connectivity=10,in_place=True)
+        mascara1 = 0
+        for maxSize in [4500, 3500]:
+            mascara1 = morphology.remove_small_objects(mascara,maxSize,connectivity=10,in_place=True)
+            print(maxSize)
+            print(np.any(mascara1))
+            if np.any(mascara1):
+                mascara = mascara1
+                break
         mascara=mascara.astype(np.uint8)
-        print(mascara.shape)
-        print(self.img.shape)
         maskedImg= pg.image(maskedCopy)
         maskedImg.setWindowTitle("Canal V")
         #pg.image(mascara)

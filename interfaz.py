@@ -144,6 +144,22 @@ class Ui_MainWindow(object):
         self.btnMoments.setObjectName("btnMoments")
         self.gridLayout_3.addWidget(self.btnMoments, 3, 1, 1, 1)
 
+        self.btnPredict = QtWidgets.QPushButton(self.groupBox_3)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.btnPredict.sizePolicy().hasHeightForWidth())
+        self.btnPredict.setSizePolicy(sizePolicy)
+        self.btnPredict.setMinimumSize(QtCore.QSize(360, 0))
+        font = QtGui.QFont()
+        font.setFamily("Arial")
+        font.setPointSize(12)
+        font.setBold(False)
+        font.setWeight(50)
+        self.btnPredict.setFont(font)
+        self.btnPredict.setObjectName("btnMoments")
+        self.gridLayout_3.addWidget(self.btnPredict, 4, 0, 1, 1)
+
         self.gridLayout_5.addWidget(self.groupBox_3, 2, 0, 1, 1)
         self.groupBox = QtWidgets.QGroupBox(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
@@ -264,9 +280,9 @@ class Ui_MainWindow(object):
         self.btnLaplacian.setText(_translate("MainWindow", "Laplaciano"))
         self.btnContorno.setText(_translate("MainWindow", "Contorno"))
         self.btnMoments.setText(_translate("MainWindow", "Momentos"))
-
+        self.btnPredict.setText(_translate("MainWindow", "Predict"))
         self.btnFunc2.setText(_translate("MainWindow", "High Boost"))
-        self.label.setText(_translate("MainWindow", "Visión Artificial: Fase 5 "))
+        self.label.setText(_translate("MainWindow", "Visión Artificial: Fase 6 "))
         self.btnSelecArchivo.setText(_translate("MainWindow", "Seleccionar archivo"))
 from pyqtgraph import PlotWidget
 
