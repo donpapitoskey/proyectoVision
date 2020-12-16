@@ -1074,7 +1074,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
               imgmascara= cv2.bitwise_and(img,img,mask = mascara)
               #graficar(imgmascara)
         
-              mascara1, imgmascara1= recortar(img)
+              mascara1, imgmascara1= recortar2(img)
               print('w')
       
         return  imgmascara1
