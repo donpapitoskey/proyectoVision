@@ -45,7 +45,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btnFunc.clicked.connect(self.histogramaGlobal)
         self.btnFunc1.clicked.connect(self.aplicarClahe)
         self.btnFunc2.clicked.connect(self.highBoost)
-        self.btnSegment.clicked.connect(self.recortar2)
+        self.btnSegment.clicked.connect(self.Segmentador)
         self.btnButterFreq.clicked.connect(self.butterFilterFreq)
         self.btnLaplacian.clicked.connect(self.laplaciano)
         self.btnContorno.clicked.connect(self.contorno)
@@ -276,7 +276,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         filtered.setWindowTitle("Imagen Filtrada")
 
     def predecir(self):
-        self.recortar2()
+        self.Segmentador()
         b,g,r = cv2.split(self.commonImage)
         meanR = r.sum()/np.count_nonzero(r)
         meanG = g.sum()/np.count_nonzero(g)
@@ -411,25 +411,12 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         print('Entropía =',moments[5])
  
     def recortar2(self):
-        #img = cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV)
-        #img[:,:,0] = cv2.equalizeHist(img[:,:,0])
-        # img[:,:,0] = cv2.equalizeHist(img[:,:,0])
-        #img = cv2.cvtColor(img,cv2.COLOR_YUV2BGR)
-        #clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-        #img[:,:,0] = clahe.apply(img[:,:,0])
-
-
-        # img = cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
-        # # print(img)
-        # # Convert to gray-scale
-        # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        h,s_channel,v_channel = cv2.split(cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV))
+        img = self.segmentado
+        h,s_channel,v_channel = cv2.split(cv2.cvtColor(self.segmentado, cv2.COLOR_BGR2HSV))
         # # Blur the image to reduce noise
         hBlur = cv2.medianBlur(h, 11)
         hBlur = cv2.medianBlur(hBlur, 11)
-        #hBlur = cv2.medianBlur(hBlur, 11)
-        #pg.image(hBlur)
-        ###graficar(hBlur)
+        
 
         ret2,_ = cv2.threshold(hBlur,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         ret2,_ = cv2.threshold(hBlur[hBlur>ret2],0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
@@ -438,7 +425,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         print("umbral:",ret2)
         mascara=hBlur.copy()
         #mascara[(mascara<=ret2) & (mascara>3)]=0 # trabajando canal h
-        mascara[(mascara<=ret2)=0
+        mascara[(mascara<=ret2)]=0
         mascara[mascara!=0]=1
         #masked = np.multiply(mascara, v_channel) # sacamos canal v
         #masked[masked<=100]= 0  #trabajamos canal V
@@ -453,8 +440,9 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         mascara=cv2.dilate(mascara, kernel1,iterations = 1)
         mascara=cv2.morphologyEx(mascara, cv2.MORPH_CLOSE, kernel2)
         mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
-        mascara=morphology.remove_small_objects(mascara,5000,connectivity=10,in_place=True)
-        
+        mascara=morphology.remove_small_objects(mascara,3500,connectivity=10,in_place=True)
+        mascopy = mascara.copy()
+        pg.image(mascopy)
         #partialMasko = mascara.copy()
         
         #mascara1 = 0
@@ -569,7 +557,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 #graficar(mascara)
 
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-                graficar(imgmascara)
+                #graficar(imgmascara)
           
                 print('4')
             
@@ -604,7 +592,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 #graficar(mascara)
 
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-                graficar(imgmascara)
+                #graficar(imgmascara)
 
                 print('5')
         
@@ -646,7 +634,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 #graficar(mascara)
 
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-                graficar(imgmascara)
+                #graficar(imgmascara)
                 print('6')         
         
         else:
@@ -664,7 +652,6 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 img=img[:,index2-800-y11:index2+800-y11] 
                 ###graficar(img)
-
                 ###graficar(mascara)
                 #print('mayor a 4160 2')
                 print('7')
@@ -717,7 +704,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 for c in contorn:
                   area=cv2.contourArea(c)
                   area1.append(area)
-        
+                
                 maximo= np.max(area1)
                 MAX= maximo-(maximo*(0.08)) 
                 #print(maximo)
@@ -730,7 +717,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 mascara=cv2.dilate(mascara, kernel1,iterations = 1)
 
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-                graficar(imgmascara)
+                #graficar(imgmascara)
                 print('10')
             
             
@@ -767,7 +754,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 mascara=cv2.dilate(mascara, kernel1,iterations = 1)
 
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-                graficar(imgmascara)
+                #graficar(imgmascara)
                 print('11')
 
             else:
@@ -805,7 +792,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 mascara=cv2.dilate(mascara, kernel1,iterations = 1)
 
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-                graficar(imgmascara)
+                #graficar(imgmascara)
                 print('12')
                 
         tr =pg.QtGui.QTransform()
@@ -891,9 +878,9 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.wGlob.plotHisto.setLabel('bottom','Intensidad de iluminacion' )
                 
                 
-    def Segmentador(img):
+    def Segmentador(self):
         #img = cv2.imread('/content/drive/MyDrive/Colab Notebooks/SEMINARIO/maskRCNNv2/Dataset_final5/val/c1anemia-80.jpg', cv2.IMREAD_COLOR)
-        img= cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+        img= self.img#cv2.cvtColor(self.img,cv2.COLOR_BGR2RGB)
         #graficar(img)
         G=img[:,:,1]
         #graficar(G)
@@ -921,163 +908,179 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         yhisto=mascara.sum(axis=0)/len(mascara)
         xhisto=mascara.sum(axis=1)/len(mascara)
         if np.max(xhisto)>np.max(yhisto):
-          index1=np.where(xhisto==np.max(xhisto))[0][0]
-          x1= index1+800 ##izq
-          x2= index1-800 ##derec
-          if x1>valox[0]:  
-            x11= x1-valox[0]
-            mascara=mascara[index1-1200-x11:index1+400-x11,:] 
-            img=img[index1-1200-x11:index1+400-x11,:] 
+            index1=np.where(xhisto==np.max(xhisto))[0][0]
+            x1= index1+800 ##izq
+            x2= index1-800 ##derec
+            print(x1, "-----------",x2)
+            if x1>valox[0]:  
+                x11= x1-valox[0]
+                mascara=mascara[index1-1200-x11:index1+400-x11,:] 
+                img=img[index1-1200-x11:index1+400-x11,:] 
+            
             #graficar(img)
             #graficar(mascara)
 
-          elif x2<0:
-            x22=abs(x2)
-            mascara=mascara[index1-1200+x22:index1+400+x22,:]
-            img=img[index1-1200+x22:index1+400+x22,:]
-            #graficar(img)
-            #graficar(mascara)
-          else:
-            mascara=mascara[index1-1200:index1+400,:]
-            #plt.plot(xhisto)
-            #plt.show()
+            elif x2<0:
+                x22=abs(x2)
+                mascara=mascara[index1-1200+x22:index1+400+x22,:]
+                img=img[index1-1200+x22:index1+400+x22,:]
+
+                #graficar(img)
+                #graficar(mascara)
+            else:
+                mascara=mascara[index1-1200:index1+400,:]
+                #plt.plot(xhisto)
+                #plt.show()
+                #plt.plot(yhisto)
+                #graficar(mascara)
+                img=img[index1-1200:index1+400,:]
+                #graficar(img)
+
+            yhisto=mascara.sum(axis=0)/len(mascara)
             #plt.plot(yhisto)
-            #graficar(mascara)
-            img=img[index1-1200:index1+400,:]
-            #graficar(img)
-      
-          yhisto=mascara.sum(axis=0)/len(mascara)
-          #plt.plot(yhisto)
-          index2=np.where(yhisto==np.max(yhisto))[0][0]
-          y1= index2+800 ##izq
-          y2= index2-800 ##derec
-          if y1>valox[1]:
-            y11= y1-valox[1]
-            mascara=mascara[:,index2-800-y11:index2+800-y11] 
+            index2=np.where(yhisto==np.max(yhisto))[0][0]
+            y1= index2+800 ##izq
+            y2= index2-800 ##derec
+            if y1>valox[1]:
+                y11= y1-valox[1]
+                mascara=mascara[:,index2-800-y11:index2+800-y11] 
 
-            img=img[:,index2-800-y11:index2+800-y11] 
-            #graficar(img)
+                img=img[:,index2-800-y11:index2+800-y11] 
+                #graficar(img)
 
-            img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-            #graficar(img)
+                img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                #graficar(img)
 
-            #graficar(mascara)
-            imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-            #(imgmascara)
-            mascara1, imgmascara1= recortar(img)
-            print('r')
-          
-          elif y2<0:
-            y22=abs(y2)
-            mascara=mascara[:,index2-800+y22:index2+800+y22]
+                #graficar(mascara)
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                #(imgmascara)
+                self.segmentado = img
+                self.recortar2()
+                #mascara1, imgmascara1= recortar2() ##################################################33
+                print('r')
 
-            img=img[:,index2-800+y22:index2+800+y22]
-            #graficar(img)
+            elif y2<0:
+                y22=abs(y2)
+                mascara=mascara[:,index2-800+y22:index2+800+y22]
 
-            img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-            #graficar(img)
+                img=img[:,index2-800+y22:index2+800+y22]
+                #graficar(img)
 
-            #graficar(mascara)
-            imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-            #graficar(imgmascara)
-            mascara1, imgmascara1= recortar(img)
-            print('s')
+                img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                #graficar(img)
 
-          else: 
-            mascara=mascara[:,index2-800:index2+800]
-            img=img[:,index2-800:index2+800]
-            #graficar(img)
+                #graficar(mascara)
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                #graficar(imgmascara)
+                self.segmentado = img
+                self.recortar2()
+                #mascara1, imgmascara1= recortar(img) ########################################3
+                print('s')
 
-            img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-            #graficar(img)
+            else: 
+                mascara=mascara[:,index2-800:index2+800]
+                img=img[:,index2-800:index2+800]
+                #graficar(img)
 
-            #graficar(mascara)
-            imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-            #graficar(imgmascara)
-            mascara1, imgmascara1= recortar(img)
-            print('t')
-          
+                img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                #graficar(img)
+
+                #graficar(mascara)
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                #graficar(imgmascara)
+                self.segmentado = img
+                self.recortar2()
+                #mascara1, imgmascara1= recortar(img) ###########################################333
+                print('t')
+              
         else:
-          index2=np.where(yhisto==np.max(yhisto))[0][0]
-          y1= index2+800 ##izq
-          y2= index2-800 ##derec
+            index2=np.where(yhisto==np.max(yhisto))[0][0]
+            y1= index2+800 ##izq
+            y2= index2-800 ##derec
+            print('y1  ',y1, "-----------",y2)
     
-          if y1>valox[1]:
-            y11= y1-valox[1]
-            mascara=mascara[:,index2-800-y11:index2+800-y11] 
+            if y1>valox[1]:
+                y11= y1-valox[1]
+                mascara=mascara[:,index2-800-y11:index2+800-y11] 
 
-            img=img[:,index2-800-y11:index2+800-y11] 
-            #graficar(img)
-
-            #graficar(mascara)
+                img=img[:,index2-800-y11:index2+800-y11] 
+                #graficar(img)
+                print('y1 mayor')
+                #graficar(mascara)
       
-          elif y2<0:
-            y22=abs(y2)
-            mascara=mascara[:,index2-800+y22:index2+800+y22]
-        
-            img=img[:,index2-800+y22:index2+800+y22]
-            #graficar(img)
-        
-            #graficar(mascara)
+            elif y2<0:
+                y22=abs(y2)
+                mascara=mascara[:,index2-800+y22:index2+800+y22]
 
-          else: 
-            mascara=mascara[:,index2-800:index2+800]
-            #graficar(mascara)
-            img=img[:,index2-800:index2+800]
-            #graficar(img)
-        
+                img=img[:,index2-800+y22:index2+800+y22]
+                #graficar(img)
+                print('y2 menor a 0')
+                #graficar(mascara)
+    
+            else: 
+                mascara=mascara[:,index2-800:index2+800]
+                #graficar(mascara)
+                img=img[:,index2-800:index2+800]
+                #graficar(img)
+                print('ninguno')
             xhisto=mascara.sum(axis=1)/len(mascara)
             #plt.plot(yhisto)
             index1=np.where(xhisto==np.max(xhisto))[0][0]
             x1= index1+800 ##izq
             x2= index1-800 ##derec
-      
-            if x1>valox[0]:  
-              x11= x1-valox[0]
-              mascara=mascara[index1-1200-x11:index1+400-x11,:] 
 
-              img=img[index1-1200-x11:index1+400-x11,:] 
-              #graficar(img)
+            if x1>valox[0]:     
+                x11= x1-valox[0]
+                mascara=mascara[index1-1200-x11:index1+400-x11,:] 
+                print('x1 mayor a vloy')
+                img=img[index1-1200-x11:index1+400-x11,:] 
+                #graficar(img)
 
-              img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-              #graficar(img)
-      
-              #graficar(mascara)
-              imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-              #graficar(imgmascara)
-              mascara1, imgmascara1= recortar(img)
-              print('u')
+                img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                #graficar(img)
 
-              #print('mayor a 3120 2')
-    
+                #graficar(mascara)
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                #graficar(imgmascara)
+                self.segmentado = img.copy()
+                self.recortar2()
+                #mascara1, imgmascara1= recortar(img) ####################################333
+                print('u')
+
+                #print('mayor a 3120 2')
+        
             elif x2<0:
-              x22=abs(x2)
-              mascara=mascara[index1-1200+x22:index1+400+x22,:]
-              img=img[index1-1200+x22:index1+400+x22,:]
-              #graficar(img)
-              img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-              #graficar(img)
-              #graficar(mascara)
-              imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-              #graficar(imgmascara)
-              mascara1, imgmascara1= recortar(img)
-              print('v')
+                x22=abs(x2)
+                mascara=mascara[index1-1200+x22:index1+400+x22,:]
+                img=img[index1-1200+x22:index1+400+x22,:]
+                #graficar(img)
+                print('x2 menor a 0')
+                img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                #graficar(img)
+                #graficar(mascara)
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                #graficar(imgmascara)
+                self.segmentado = img.copy()
+                self.recortar2()
+                #mascara1, imgmascara1= recortar(img) ####################################333
+                print('v')
       
             else:
-              mascara=mascara[index1-1200:index1+400,:]
-              img=img[index1-1200:index1+400,:]
-              #graficar(img)
-              img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-              #graficar(img)
+                mascara=mascara[index1-1200:index1+400,:]
+                img=img[index1-1200:index1+400,:]
+                #graficar(img)
+                img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+                #graficar(img)
+                print('ninguno de x2 ni x1')
+                #graficar(mascara)
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                #graficar(imgmascara)
+                self.segmentado = img
+                self.recortar2()
+                #mascara1, imgmascara1= recortar2(img) ######################################3
+                print('w')
+          
         
-              #graficar(mascara)
-              imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-              #graficar(imgmascara)
-        
-              mascara1, imgmascara1= recortar2(img)
-              print('w')
-      
-        return  imgmascara1
         
 
             
