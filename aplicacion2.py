@@ -411,10 +411,10 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         print('Entropía =',moments[5])
  
     def recortar2(self):
-        img = cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV)
-        img[:,:,0] = cv2.equalizeHist(img[:,:,0])
+        #img = cv2.cvtColor(self.img,cv2.COLOR_RGB2YUV)
+        #img[:,:,0] = cv2.equalizeHist(img[:,:,0])
         # img[:,:,0] = cv2.equalizeHist(img[:,:,0])
-        img = cv2.cvtColor(img,cv2.COLOR_YUV2BGR)
+        #img = cv2.cvtColor(img,cv2.COLOR_YUV2BGR)
         #clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
         #img[:,:,0] = clahe.apply(img[:,:,0])
 
@@ -423,7 +423,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         # # print(img)
         # # Convert to gray-scale
         # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        h,s_channel,v_channel = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
+        h,s_channel,v_channel = cv2.split(cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV))
         # # Blur the image to reduce noise
         hBlur = cv2.medianBlur(h, 11)
         hBlur = cv2.medianBlur(hBlur, 11)
@@ -437,34 +437,37 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         
         print("umbral:",ret2)
         mascara=hBlur.copy()
-        mascara[(mascara<=ret2) & (mascara>3)]=0 # trabajando canal h
+        #mascara[(mascara<=ret2) & (mascara>3)]=0 # trabajando canal h
+        mascara[(mascara<=ret2)=0
         mascara[mascara!=0]=1
-        masked = np.multiply(mascara, v_channel) # sacamos canal v
-        masked[masked<=100]= 0  #trabajamos canal V
-        masked[masked>=195] = 0
-        maskedCopy = masked.copy()
-        masked[masked!=0] = 1
-        mascara = masked
-        partial2 = pg.image(mascara)
-        partial2.setWindowTitle("Mascara")
+        #masked = np.multiply(mascara, v_channel) # sacamos canal v
+        #masked[masked<=100]= 0  #trabajamos canal V
+        #masked[masked>=195] = 0
+        #maskedCopy = masked.copy()
+        #masked[masked!=0] = 1
+        #mascara = masked
+        #partial2 = pg.image(mascara)
+        #partial2.setWindowTitle("Mascara")
         kernel1 = np.ones((5,5),np.uint8)### agrego kernel de las morfologicas
         kernel2 = np.ones((27,27),np.uint8)
         mascara=cv2.dilate(mascara, kernel1,iterations = 1)
         mascara=cv2.morphologyEx(mascara, cv2.MORPH_CLOSE, kernel2)
         mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
-        partialMasko = mascara.copy()
-        #mascara=morphology.remove_small_objects(mascara,3500,connectivity=10,in_place=True)
-        mascara1 = 0
-        for maxSize in [4500, 3500]:
-            mascara1 = morphology.remove_small_objects(mascara,maxSize,connectivity=10,in_place=True)
-            print(maxSize)
-            print(np.any(mascara1))
-            if np.any(mascara1):
-                mascara = mascara1
-                break
+        mascara=morphology.remove_small_objects(mascara,5000,connectivity=10,in_place=True)
+        
+        #partialMasko = mascara.copy()
+        
+        #mascara1 = 0
+        #for maxSize in [4500, 3500]:
+            #mascara1 = morphology.remove_small_objects(mascara,maxSize,connectivity=10,in_place=True)
+            #print(maxSize)
+            #print(np.any(mascara1))
+            #if np.any(mascara1):
+                #mascara = mascara1
+                #break
         mascara=mascara.astype(np.uint8)
-        maskedImg= pg.image(maskedCopy)
-        maskedImg.setWindowTitle("Canal V")
+        #maskedImg= pg.image(maskedCopy)
+        #maskedImg.setWindowTitle("Canal V")
         #pg.image(mascara)
         # kernel=cv2.getStructuringElement(cv2.MORPH_CROSS,(71,71))
         # # mascara = cv2.morphologyEx(mascara, cv2.MORPH_CLOSE, kernel)
@@ -491,12 +494,13 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             #print('index1,x1,x2', index1,x1,x2)
             
 
-            if x1>4160:  
-                x11= x1-4160
+            if x1>valox[0]:  
+                x11= x1-valox[0]
                 mascara=mascara[index1-800-x11:index1+800-x11,:] 
             
                 img=img[index1-800-x11:index1+800-x11,:] 
                 ###graficar(img)
+                print('1')
 
                 ###graficar(mascara)
                 #print('mayor a 3120')
@@ -507,6 +511,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 img=img[index1-800+x22:index1+800+x22,:]
                 ###graficar(img)
+                print('2')
 
                 ###graficar(mascara)
                 #print('menor a 0 en x')
@@ -520,6 +525,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             
                 img=img[index1-800:index1+800,:]
                 ###graficar(img)
+                print('3')
 
                 #print('en x ',mascara)
                 #print('todo bien primer else')
@@ -533,9 +539,10 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             y2= index2-800 ##derec
 
             #print('y1 y y2', y1,y2)
-        
-            if y1>3120:  
-                y11= y1-3120
+            
+            area1=[]
+            if y1>valox[1]:  
+                y11= y1-valox[1]
                 mascara=mascara[:,index2-800-y11:index2+800-y11] 
 
                 img=img[:,index2-800-y11:index2+800-y11] 
@@ -544,11 +551,27 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
                 ###graficar(img)
 
-                ###graficar(mascara)
+                contorn, _ =cv2.findContours(mascara,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+                for c in contorn:
+                  area=cv2.contourArea(c)
+                  area1.append(area)
+          
+                #print(type(area1))
+                maximo= np.max(area1)
+                #print(maximo)
+
+                MAX= maximo-(maximo*(0.08)) 
+
+                mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
+                mascara=morphology.remove_small_objects(mascara,MAX,connectivity=10,in_place=True)
+                mascara=mascara.astype(np.uint8)
+                mascara=cv2.dilate(mascara, kernel1,iterations = 1)
+                #graficar(mascara)
+
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-                ###graficar(imgmascara)
-            
-                #print('mayor a 4160')
+                graficar(imgmascara)
+          
+                print('4')
             
             elif y2<0:
                 y22=abs(y2)
@@ -560,11 +583,30 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
                 ####graficar(img)
 
-                ###graficar(mascara)
+                #graficar(mascara)
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-                ###graficar(imgmascara)
+                #graficar(imgmascara)
 
-                #print('menor a 0 en y')
+                contorn, _ =cv2.findContours(mascara,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+                for c in contorn:
+                  area=cv2.contourArea(c)
+                  area1.append(area)
+          
+                maximo= np.max(area1)
+                #print(maximo)
+                #print(type(area1))  
+                MAX= maximo-(maximo*(0.08)) 
+
+                mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
+                mascara=morphology.remove_small_objects(mascara,MAX,connectivity=10,in_place=True)
+                mascara=mascara.astype(np.uint8)
+                mascara=cv2.dilate(mascara, kernel1,iterations = 1)
+                #graficar(mascara)
+
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                graficar(imgmascara)
+
+                print('5')
         
             else: 
                 mascara=mascara[:,index2-800:index2+800]
@@ -575,13 +617,37 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
                 ###graficar(img)
 
-                ###graficar(mascara)
+                #graficar(mascara)
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-                ###graficar(imgmascara)
-                #img=img[index1-800:index1+800,index2-800:index2+800]
-                #graficar(img)
-                #print('eSte es ', index2)
-                #print('todo bien en primer macroif')          
+                #graficar(imgmascara)
+                #----img=img[index1-800:index1+800,index2-800:index2+800]
+                #---graficar(img)
+                #---print('eSte es ', index2)
+                #---print('todo bien')
+
+                contorn, _ =cv2.findContours(mascara,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+                for c in contorn:
+                  area=cv2.contourArea(c)
+                  area1.append(area)
+          
+
+                maximo= np.max(area1)
+                #print(maximo)
+
+                #print(type(area1))  
+
+                MAX= maximo-(maximo*(0.08)) 
+                #print(MAX)
+
+                mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
+                mascara=morphology.remove_small_objects(mascara,MAX,connectivity=10,in_place=True)
+                mascara=mascara.astype(np.uint8)
+                mascara=cv2.dilate(mascara, kernel1,iterations = 1)
+                #graficar(mascara)
+
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                graficar(imgmascara)
+                print('6')         
         
         else:
 
@@ -592,8 +658,8 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
             y1= index2+800 ##izq
             y2= index2-800 ##derec
 
-            if y1>3120:
-                y11= y1-3120
+            if y1>valox[1]:
+                y11= y1-valox[1]
                 mascara=mascara[:,index2-800-y11:index2+800-y11] 
 
                 img=img[:,index2-800-y11:index2+800-y11] 
@@ -601,6 +667,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 ###graficar(mascara)
                 #print('mayor a 4160 2')
+                print('7')
             
             elif y2<0:
                 y22=abs(y2)
@@ -608,7 +675,7 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 
                 img=img[:,index2-800+y22:index2+800+y22]
                 ###graficar(img)
-                
+                print('8')
                 #print('menor a 0 en y 2')
                 ###graficar(mascara)
 
@@ -619,17 +686,19 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
 
                 img=img[:,index2-800:index2+800]
                 ###graficar(img)
+                print('9')
             
             xhisto=mascara.sum(axis=1)/len(mascara)
             #plt.plot(yhisto)
             index1=np.where(xhisto==np.max(xhisto))[0][0]
         
+            area1=[]
         
             x1= index1+800 ##izq
             x2= index1-800 ##derec
         
-            if x1>4160:  
-                x11= x1-4160
+            if x1>valox[0]:  
+                x11= x1-valox[0]
                 mascara=mascara[index1-800-x11:index1+800-x11,:] 
 
                 img=img[index1-800-x11:index1+800-x11,:] 
@@ -638,11 +707,31 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
                 ###graficar(img)
         
-                ###graficar(mascara)
+                #graficar(mascara)
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-                ###graficar(imgmascara)
+                #graficar(imgmascara)
 
                 #print('mayor a 3120 2')
+
+                contorn, _ =cv2.findContours(mascara,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+                for c in contorn:
+                  area=cv2.contourArea(c)
+                  area1.append(area)
+        
+                maximo= np.max(area1)
+                MAX= maximo-(maximo*(0.08)) 
+                #print(maximo)
+                #print(type(area1))   
+
+                mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
+                mascara=morphology.remove_small_objects(mascara,MAX, connectivity=10,in_place=True)
+                mascara=mascara.astype(np.uint8)
+                #graficar(mascara)
+                mascara=cv2.dilate(mascara, kernel1,iterations = 1)
+
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                graficar(imgmascara)
+                print('10')
             
             
             elif x2<0:
@@ -655,10 +744,31 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
                 ####graficar(img)
 
-                ###graficar(mascara)
+                #graficar(mascara)
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-                ###graficar(imgmascara)
+                #graficar(imgmascara)
+
                 #print('menor a 0 en x 2')
+
+                contorn, _ =cv2.findContours(mascara,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+                for c in contorn:
+                  area=cv2.contourArea(c)
+                  area1.append(area)
+        
+                maximo= np.max(area1)
+                #print(maximo)
+                #print(type(area1))  
+                MAX= maximo-(maximo*(0.08)) 
+
+                mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
+                mascara=morphology.remove_small_objects(mascara,MAX,connectivity=10,in_place=True)
+                mascara=mascara.astype(np.uint8)
+                #graficar(mascara)
+                mascara=cv2.dilate(mascara, kernel1,iterations = 1)
+
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                graficar(imgmascara)
+                print('11')
 
             else:
                 mascara=mascara[index1-800:index1+800,:]
@@ -669,14 +779,35 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
                 ###graficar(img)
 
-                ###graficar(mascara)
-
+                #graficar(mascara)
                 imgmascara= cv2.bitwise_and(img,img,mask = mascara)
-
-                ###graficar(imgmascara)
+        
+                #graficar(imgmascara)
                 #print('todo bien')
                 #img=img[index1-800:index1+800,index2-800:index2+800]
                 #graficar(img)
+
+                contorn, _ =cv2.findContours(mascara,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+                for c in contorn:
+                  area=cv2.contourArea(c)
+                  area1.append(area)
+       
+                maximo= np.max(area1)
+                #print(maximo)
+                #print(type(area1))   
+
+                MAX= maximo-(maximo*(0.08)) 
+
+                mascara=mascara.astype(np.bool_)## remove_small solo funciona con variables binarias
+                mascara=morphology.remove_small_objects(mascara,MAX,connectivity=10,in_place=True)
+                mascara=mascara.astype(np.uint8)
+                #graficar(mascara)
+                mascara=cv2.dilate(mascara, kernel1,iterations = 1)
+
+                imgmascara= cv2.bitwise_and(img,img,mask = mascara)
+                graficar(imgmascara)
+                print('12')
+                
         tr =pg.QtGui.QTransform()
         tr.rotate(90)
         origi = pg.image(self.img)
