@@ -283,7 +283,28 @@ class MyApp(QtWidgets.QMainWindow, Ui_MainWindow):
         gray = cv2.cvtColor(self.commonImage, cv2.COLOR_BGR2GRAY)
         eritemia = np.log10(meanR) - np.log10(meanG)
         meanGray = gray.sum()/np.count_nonzero(gray)
-        printable = self.model.predict(np.reshape([eritemia, meanGray],(1,2)))
+        h_1 = cv2.calcHist([gray], [0], None, [256], [0, 255])
+        # Eliminar zonas negras
+        h_1[0][0] = 0
+        #print(sum(h_1))
+        # Normalizar
+        h_1 = h_1 / sum(h_1)
+        # Vector con niveles de gris normalizado
+        gris = np.arange(256) / 255
+        h_11 = np.zeros(256)
+        moments = np.zeros(6)
+        for i in range(256):
+            h_11[i] = h_1[i][0]
+
+        moments[0] = sum(h_11 * gris)
+
+        for j in range(1, 6):
+            moments[j] = sum(((gris - moments[0]) ** (j + 1)) * h_11)
+
+        moments = moments * 256
+        moments[1] = (moments[1] * 256) ** (0.5)
+        R = 1 - (1 / (1 + (moments[2] / (256))))
+        printable = self.model.predict(np.reshape([eritemia, moments[0], moments[1], R, moments[3], moments[5], moments[5]],(1,-1)))
         dictionary = {0:'Sin anemia', 1:'Con anemia'}
         print(dictionary[printable[0]])
 
